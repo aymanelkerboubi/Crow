@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ viewed_user.username }} - User Details | Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+    
+    .page-header {
+        margin-bottom: 32px;
+    }
+    
+    .user-header {
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        padding: 32px;
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 24px;
+    }
+    
+    .user-header h1 {
+        font-size: 2rem;
+        margin-bottom: 8px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 32px;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+    }
+    
+    .stat-label {
+        color: #6b7280;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+    
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2563eb;
+    }
+    
+    .section {
+        background: white;
+        padding: 24px;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 24px;
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        padding: 12px;
+        text-align: left;
+        background: #f9fafb;
+        border-bottom: 2px solid #e5e7eb;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    td {
+        padding: 12px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    tr:hover {
+        background: #f9fafb;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="page-header">
+        <a href="{% url 'admin_users_list' %}" class="btn btn-secondary">← Back to Users</a>
+    </div>
+    
+    <div class="user-header">
+        <h1>{{ viewed_user.username }}</h1>
+        <p>{{ viewed_user.email }}</p>
+        <p style="opacity: 0.9; margin-top: 8px;">Joined {{ viewed_user.date_joined|date:"F d, Y" }}</p>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Sessions</div>
+            <div class="stat-value">{{ user_stats.total_sessions }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Meetings Attended</div>
+            <div class="stat-value">{{ user_stats.total_meetings }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Teams Joined</div>
+            <div class="stat-value">{{ user_stats.total_teams }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Contacts</div>
+            <div class="stat-value">{{ user_stats.total_contacts }}</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Total Activities</div>
+            <div class="stat-value">{{ user_stats.total_activities }}</div>
+        </div>
+    </div>
+    
+    <!-- Recent Sessions -->
+    <div class="section">
+        <h2 class="section-title">Recent Sessions</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Device</th>
+                    <th>Browser</th>
+                    <th>IP Address</th>
+                    <th>Login Time</th>
+                    <th>Last Activity</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in recent_sessions %}
+                <tr>
+                    <td>{{ session.device_type }}</td>
+                    <td>{{ session.browser|truncatewords:3 }}</td>
+                    <td><code>{{ session.ip_address }}</code></td>
+                    <td>{{ session.login_time|date:"M d, Y H:i" }}</td>
+                    <td>{{ session.last_activity|timesince }} ago</td>
+                    <td>
+                        {% if session.is_active %}
+                        <span style="color: #10b981;">Active</span>
+                        {% else %}
+                        <span style="color: #6b7280;">Inactive</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: #6b7280;">
+                        No sessions yet
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Recent Meetings -->
+    <div class="section">
+        <h2 class="section-title">Recent Meetings</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Meeting</th>
+                    <th>Room</th>
+                    <th>Joined</th>
+                    <th>Duration</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for session in recent_meetings %}
+                <tr>
+                    <td><strong>{{ session.meeting.title }}</strong></td>
+                    <td>{{ session.room.name }}</td>
+                    <td>{{ session.joined_at|date:"M d, Y H:i" }}</td>
+                    <td>
+                        {% if session.left_at %}
+                        {{ session.duration.total_seconds|floatformat:0|default:0 }} seconds
+                        {% else %}
+                        <span style="color: #10b981;">In Progress</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; padding: 40px; color: #6b7280;">
+                        No meetings attended
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Recent Activities -->
+    <div class="section">
+        <h2 class="section-title">Activity History</h2>
+        <div style="max-height: 400px; overflow-y: auto;">
+            {% for activity in recent_activities %}
+            <div style="padding: 12px; border-left: 3px solid #2563eb; background: #f9fafb; border-radius: 4px; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <strong>{{ activity.get_activity_type_display }}</strong>
+                        {% if activity.description %}
+                        <p style="color: #6b7280; font-size: 13px; margin: 4px 0 0 0;">{{ activity.description }}</p>
+                        {% endif %}
+                    </div>
+                    <span style="color: #6b7280; font-size: 12px;">{{ activity.timestamp|date:"M d, H:i" }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <p style="text-align: center; padding: 40px; color: #6b7280;">No activities yet</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

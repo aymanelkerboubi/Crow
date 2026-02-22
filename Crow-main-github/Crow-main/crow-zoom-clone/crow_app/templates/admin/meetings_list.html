@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Meetings | Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+    
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        padding: 16px;
+        text-align: left;
+        background: #f9fafb;
+        border-bottom: 2px solid #e5e7eb;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    td {
+        padding: 16px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    tr:hover {
+        background: #f9fafb;
+    }
+    
+    .pagination {
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        align-items: center;
+    }
+    
+    .pagination a {
+        padding: 8px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #1f2937;
+    }
+    
+    .pagination a:hover {
+        background: #f3f4f6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="page-header">
+        <div>
+            <h1>📹 All Meetings</h1>
+            <p style="color: #6b7280;">Total: {{ total_meetings }} meetings</p>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+    
+    <div class="content-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Meeting Title</th>
+                    <th>Host</th>
+                    <th>Room</th>
+                    <th>Scheduled</th>
+                    <th>Duration</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for meeting in meetings %}
+                <tr>
+                    <td><strong>{{ meeting.title }}</strong></td>
+                    <td>{{ meeting.room.host.username }}</td>
+                    <td>{{ meeting.room.name }}</td>
+                    <td>
+                        {% if meeting.scheduled_time %}
+                        {{ meeting.scheduled_time|date:"M d, Y H:i" }}
+                        {% else %}
+                        <span style="color: #6b7280;">No schedule</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ meeting.duration }} min</td>
+                    <td>{{ meeting.created_at|date:"M d, Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 60px; color: #6b7280;">
+                        No meetings found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Pagination -->
+        {% if meetings.has_other_pages %}
+        <div class="pagination">
+            {% if meetings.has_previous %}
+            <a href="?page=1">« First</a>
+            <a href="?page={{ meetings.previous_page_number }}">Previous</a>
+            {% endif %}
+            
+            <span style="color: #6b7280;">
+                Page {{ meetings.number }} of {{ meetings.paginator.num_pages }}
+            </span>
+            
+            {% if meetings.has_next %}
+            <a href="?page={{ meetings.next_page_number }}">Next</a>
+            <a href="?page={{ meetings.paginator.num_pages }}">Last »</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users | Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+    
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        padding: 16px;
+        text-align: left;
+        background: #f9fafb;
+        border-bottom: 2px solid #e5e7eb;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    td {
+        padding: 16px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    tr:hover {
+        background: #f9fafb;
+    }
+    
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .pagination {
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        align-items: center;
+    }
+    
+    .pagination a {
+        padding: 8px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #1f2937;
+    }
+    
+    .pagination a:hover {
+        background: #f3f4f6;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="page-header">
+        <div>
+            <h1>👥 All Users</h1>
+            <p style="color: #6b7280;">Total: {{ total_users }} users</p>
+        </div>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">← Back to Dashboard</a>
+    </div>
+    
+    <div class="content-card">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Email</th>
+                        <th>Joined</th>
+                        <th>Sessions</th>
+                        <th>Meetings</th>
+                        <th>Teams</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                                <div>
+                                    <div style="font-weight: 600;">{{ user.username }}</div>
+                                    <div style="font-size: 12px; color: #6b7280;">
+                                        {% if user.is_superuser %}
+                                        <span style="color: #ef4444;">Admin</span>
+                                        {% elif user.admin_role %}
+                                        <span style="color: #f59e0b;">{{ user.admin_role.get_role_display }}</span>
+                                        {% else %}
+                                        User
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                        <td>{{ user.session_count }}</td>
+                        <td>{{ user.meeting_count }}</td>
+                        <td>{{ user.team_count }}</td>
+                        <td>
+                            <a href="{% url 'admin_user_detail' user.id %}" style="color: #2563eb; text-decoration: none;">View Details →</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 60px; color: #6b7280;">
+                            No users found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if users.has_other_pages %}
+        <div class="pagination">
+            {% if users.has_previous %}
+            <a href="?page=1">« First</a>
+            <a href="?page={{ users.previous_page_number }}">Previous</a>
+            {% endif %}
+            
+            <span style="color: #6b7280;">
+                Page {{ users.number }} of {{ users.paginator.num_pages }}
+            </span>
+            
+            {% if users.has_next %}
+            <a href="?page={{ users.next_page_number }}">Next</a>
+            <a href="?page={{ users.paginator.num_pages }}">Last »</a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

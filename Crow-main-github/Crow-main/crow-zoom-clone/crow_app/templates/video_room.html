@@ -1,0 +1,339 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ room.name }} - Video Call | Crow{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        overflow: hidden;
+        background: #000;
+    }
+
+    .video-room {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: #1a1a1a;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Video Grid */
+    .video-grid {
+        flex: 1;
+        display: grid;
+        gap: 8px;
+        padding: 8px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Dynamic grid layouts */
+    .video-grid.participants-1 { grid-template-columns: 1fr; }
+    .video-grid.participants-2 { grid-template-columns: repeat(2, 1fr); }
+    .video-grid.participants-3,
+    .video-grid.participants-4 { 
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+    }
+    .video-grid.participants-5,
+    .video-grid.participants-6 { 
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+    }
+    .video-grid.participants-7,
+    .video-grid.participants-8,
+    .video-grid.participants-9 { 
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+    }
+
+    /* Video Container */
+    .video-container {
+        position: relative;
+        background: #000;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .video-container video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .video-container.local video {
+        transform: scaleX(-1);
+    }
+
+    .video-info {
+        position: absolute;
+        bottom: 12px;
+        left: 12px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 6px 12px;
+        border-radius: 20px;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+    }
+
+    .video-info.muted .status-indicator {
+        background: #ef4444;
+    }
+
+    /* Control Bar */
+    .control-bar {
+        background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .control-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        transition: all 0.2s;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+
+    .control-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+
+    .control-btn.active {
+        background: #2563eb;
+    }
+
+    .control-btn.danger {
+        background: #dc2626;
+    }
+
+    .control-btn.danger:hover {
+        background: #b91c1c;
+    }
+
+    /* Room Header */
+    .room-header {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 12px 20px;
+        border-radius: 12px;
+        color: white;
+        z-index: 10;
+    }
+
+    .room-header h2 {
+        font-size: 18px;
+        margin-bottom: 4px;
+    }
+
+    .participant-count {
+        font-size: 14px;
+        color: #9ca3af;
+    }
+
+    /* Loading */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        z-index: 100;
+    }
+
+    .loading-overlay.hidden {
+        display: none;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-top-color: #2563eb;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Toast */
+    .toast {
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 1000;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .control-btn {
+            width: 48px;
+            height: 48px;
+            font-size: 18px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="video-room">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Connecting to room...</p>
+    </div>
+
+    <!-- Room Header -->
+    <div class="room-header">
+        <h2>{{ room.name }}</h2>
+        <div class="participant-count">
+            <i class="fas fa-users"></i> <span id="participantCount">{{ participants.count }}</span> participant(s)
+        </div>
+    </div>
+
+    <!-- Video Grid -->
+    <div class="video-grid participants-1" id="videoGrid">
+        <!-- Videos will be added here dynamically -->
+    </div>
+
+    <!-- Control Bar -->
+    <div class="control-bar">
+        <button class="control-btn active" id="toggleVideo" title="Toggle Camera">
+            <i class="fas fa-video"></i>
+        </button>
+        
+        <button class="control-btn active" id="toggleAudio" title="Toggle Microphone">
+            <i class="fas fa-microphone"></i>
+        </button>
+        
+        <button class="control-btn" id="shareScreen" title="Share Screen">
+            <i class="fas fa-desktop"></i>
+        </button>
+        
+        <button class="control-btn danger" id="leaveRoom" title="Leave Room">
+            <i class="fas fa-phone-slash"></i>
+        </button>
+        <button class="control-btn" id="fullscreenBtn" title="Fullscreen">
+    <i class="fas fa-expand"></i>
+</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// WebRTC Configuration
+
+// Add Video Stream keeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeep
+function addVideoStream(stream, peerId, peerName, isLocal = false) {
+    console.log(`📹 Adding video stream for ${isLocal ? 'self' : peerName} (${peerId})`);
+    
+    // Remove existing video for this peer
+    const existing = document.getElementById(`video-${peerId}`);
+    if (existing) {
+        existing.remove();
+    }
+
+    const videoContainer = document.createElement('div');
+    videoContainer.className = 'video-container' + (isLocal ? ' local' : '');
+    videoContainer.id = `video-${peerId}`;
+
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    video.autoplay = true;
+    video.playsInline = true;
+    if (isLocal) {
+        video.muted = true;
+    }
+
+    const info = document.createElement('div');
+    info.className = 'video-info';
+    info.innerHTML = `
+        <span class="status-indicator"></span>
+        <span>${isLocal ? 'You' : peerName}</span>
+    `;
+
+    videoContainer.appendChild(video);
+    videoContainer.appendChild(info);
+    videoGrid.appendChild(videoContainer);
+
+    updateGridLayout();
+}
+
+
+
+// Update Grid Layout keeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeep
+function updateGridLayout() {
+    const videoContainers = videoGrid.querySelectorAll('.video-container');
+    const count = videoContainers.length;
+    
+    participantCount.textContent = count;
+    
+    videoGrid.className = 'video-grid';
+    videoGrid.classList.add(`participants-${Math.min(count, 9)}`);
+    console.log(`📊 Grid updated: ${count} participant(s)`);
+}
+
+
+</script>
+{% endblock %}

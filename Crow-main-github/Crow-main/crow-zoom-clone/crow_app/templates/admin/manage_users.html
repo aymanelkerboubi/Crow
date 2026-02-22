@@ -1,0 +1,752 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users | Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px;
+    }
+    
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+    }
+    
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #1d4ed8;
+    }
+    
+    .btn-secondary {
+        background: #6b7280;
+        color: white;
+    }
+    
+    .btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .btn-sm {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+        overflow: hidden;
+    }
+    
+    .toolbar {
+        padding: 16px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+    }
+    
+    .search-box {
+        flex: 1;
+        max-width: 300px;
+    }
+    
+    .search-box input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    
+    .bulk-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    th {
+        padding: 16px;
+        text-align: left;
+        background: #f9fafb;
+        border-bottom: 2px solid #e5e7eb;
+        color: #6b7280;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    td {
+        padding: 16px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    tr:hover {
+        background: #f9fafb;
+    }
+    
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    
+    .badge-admin {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .badge-user {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .badge-active {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .badge-inactive {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 8px;
+    }
+    
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .modal.show {
+        display: flex;
+    }
+    
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: slideDown 0.3s;
+    }
+    
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .modal-header {
+        padding: 20px;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .modal-body {
+        padding: 20px;
+    }
+    
+    .modal-footer {
+        padding: 20px;
+        border-top: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        font-size: 14px;
+        color: #374151;
+    }
+    
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .checkbox-group input {
+        width: auto;
+    }
+    
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #6b7280;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+    }
+    
+    .close-btn:hover {
+        background: #f3f4f6;
+    }
+    
+    .checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="page-header">
+        <div>
+            <h1>👥 User Management</h1>
+            <p style="color: #6b7280;">Manage all users, roles, and permissions</p>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button onclick="openAddUserModal()" class="btn btn-primary">
+                <span>+</span> Add New User
+            </button>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">← Dashboard</a>
+        </div>
+    </div>
+    
+    <div class="content-card">
+        <div class="toolbar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search users..." onkeyup="searchUsers()">
+            </div>
+            
+            <div class="bulk-actions">
+                <span style="font-size: 13px; color: #6b7280;"><span id="selectedCount">0</span> selected</span>
+                <button onclick="bulkActivate()" class="btn btn-success btn-sm" id="bulkActivateBtn" style="display: none;">
+                    Activate
+                </button>
+                <button onclick="bulkDeactivate()" class="btn btn-secondary btn-sm" id="bulkDeactivateBtn" style="display: none;">
+                    Deactivate
+                </button>
+                {% if can_delete_content %}
+                <button onclick="bulkDelete()" class="btn btn-danger btn-sm" id="bulkDeleteBtn" style="display: none;">
+                    Delete
+                </button>
+                {% endif %}
+            </div>
+        </div>
+        
+        <table id="usersTable">
+            <thead>
+                <tr>
+                    <th style="width: 40px;">
+                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="checkbox">
+                    </th>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr data-user-id="{{ user.id }}">
+                    <td>
+                        <input type="checkbox" class="user-checkbox checkbox" value="{{ user.id }}" onchange="updateBulkActions()">
+                    </td>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                            <div>
+                                <div style="font-weight: 600;">{{ user.username }}</div>
+                                <div style="font-size: 12px; color: #6b7280;">
+                                    {{ user.first_name }} {{ user.last_name }}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% if user.admin_role %}
+                        <span class="badge badge-admin">{{ user.admin_role.get_role_display }}</span>
+                        {% else %}
+                        <span class="badge badge-user">User</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.is_active %}
+                        <span class="badge badge-active">Active</span>
+                        {% else %}
+                        <span class="badge badge-inactive">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button onclick="openEditUserModal({{ user.id }})" class="btn btn-primary btn-sm">
+                                Edit
+                            </button>
+                            <button onclick="toggleUserStatus({{ user.id }})" class="btn btn-secondary btn-sm">
+                                {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
+                            </button>
+                            <button onclick="openDeleteUserModal({{ user.id }}, '{{ user.username }}')" class="btn btn-danger btn-sm">
+                                Delete
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 60px; color: #6b7280;">
+                        No users found
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div id="addUserModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Add New User</h2>
+            <button class="close-btn" onclick="closeModal('addUserModal')">&times;</button>
+        </div>
+        <form method="POST" action="{% url 'admin_create_user' %}">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Username *</label>
+                    <input type="text" name="username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" name="password" required minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name">
+                </div>
+                
+                {% if can_manage_admins %}
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="addIsAdmin" name="is_admin" value="yes" onchange="toggleAddAdminRole()">
+                        <label for="addIsAdmin" style="margin: 0;">Make Admin</label>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="addAdminRoleGroup" style="display: none;">
+                    <label>Admin Role</label>
+                    <select name="admin_role">
+                        {% for value, label in admin_roles %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addUserModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div id="editUserModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit User</h2>
+            <button class="close-btn" onclick="closeModal('editUserModal')">&times;</button>
+        </div>
+        <form method="POST" id="editUserForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <input type="hidden" id="editUserId" name="user_id">
+                
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="editUsername" readonly style="background: #f3f4f6;">
+                </div>
+                
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="editEmail" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>New Password (leave blank to keep current)</label>
+                    <input type="password" id="editPassword" name="new_password" minlength="6">
+                </div>
+                
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="editFirstName" name="first_name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="editLastName" name="last_name">
+                </div>
+                
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="editIsActive" name="is_active" value="yes">
+                        <label for="editIsActive" style="margin: 0;">Account Active</label>
+                    </div>
+                </div>
+                
+                {% if can_manage_admins %}
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="editIsAdmin" name="is_admin" value="yes" onchange="toggleEditAdminRole()">
+                        <label for="editIsAdmin" style="margin: 0;">Make Admin</label>
+                    </div>
+                </div>
+                
+                <div class="form-group" id="editAdminRoleGroup" style="display: none;">
+                    <label>Admin Role</label>
+                    <select id="editAdminRole" name="admin_role">
+                        {% for value, label in admin_roles %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editUserModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete User Modal -->
+<div id="deleteUserModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Delete User</h2>
+            <button class="close-btn" onclick="closeModal('deleteUserModal')">&times;</button>
+        </div>
+        <form method="POST" id="deleteUserForm">
+            {% csrf_token %}
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="deleteUsername"></strong>?</p>
+                <p style="color: #ef4444; font-size: 14px;">This action cannot be undone. All user data, sessions, and activities will be permanently deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('deleteUserModal')">Cancel</button>
+                <button type="submit" class="btn btn-danger">Delete User</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Modal Functions
+function openModal(modalId) {
+    document.getElementById(modalId).classList.add('show');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('show');
+}
+
+function openAddUserModal() {
+    document.getElementById('addUserModal').querySelector('form').reset();
+    openModal('addUserModal');
+}
+
+function toggleAddAdminRole() {
+    const isChecked = document.getElementById('addIsAdmin').checked;
+    document.getElementById('addAdminRoleGroup').style.display = isChecked ? 'block' : 'none';
+}
+
+function toggleEditAdminRole() {
+    const isChecked = document.getElementById('editIsAdmin').checked;
+    document.getElementById('editAdminRoleGroup').style.display = isChecked ? 'block' : 'none';
+}
+
+async function openEditUserModal(userId) {
+    try {
+        const response = await fetch(`/admin-dashboard/get-user/${userId}/`);
+        const user = await response.json();
+        
+        document.getElementById('editUserId').value = user.id;
+        document.getElementById('editUsername').value = user.username;
+        document.getElementById('editEmail').value = user.email;
+        document.getElementById('editFirstName').value = user.first_name || '';
+        document.getElementById('editLastName').value = user.last_name || '';
+        document.getElementById('editIsActive').checked = user.is_active;
+        document.getElementById('editPassword').value = '';
+        
+        if (document.getElementById('editIsAdmin')) {
+            document.getElementById('editIsAdmin').checked = user.is_admin;
+            if (user.is_admin) {
+                document.getElementById('editAdminRole').value = user.admin_role || 'moderator';
+                document.getElementById('editAdminRoleGroup').style.display = 'block';
+            } else {
+                document.getElementById('editAdminRoleGroup').style.display = 'none';
+            }
+        }
+        
+        document.getElementById('editUserForm').action = `/admin-dashboard/edit-user/${userId}/`;
+        openModal('editUserModal');
+    } catch (error) {
+        alert('Error loading user data');
+        console.error(error);
+    }
+}
+
+function openDeleteUserModal(userId, username) {
+    document.getElementById('deleteUsername').textContent = username;
+    document.getElementById('deleteUserForm').action = `/admin-dashboard/delete-user/${userId}/`;
+    openModal('deleteUserModal');
+}
+
+// Search
+function searchUsers() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toLowerCase();
+    const table = document.getElementById('usersTable');
+    const rows = table.getElementsByTagName('tr');
+    
+    for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    }
+}
+
+// Bulk Actions
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.user-checkbox');
+    checkboxes.forEach(cb => cb.checked = selectAll.checked);
+    updateBulkActions();
+}
+
+function updateBulkActions() {
+    const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+    const count = checkboxes.length;
+    
+    document.getElementById('selectedCount').textContent = count;
+    document.getElementById('bulkActivateBtn').style.display = count > 0 ? 'inline-flex' : 'none';
+    document.getElementById('bulkDeactivateBtn').style.display = count > 0 ? 'inline-flex' : 'none';
+    const deleteBtn = document.getElementById('bulkDeleteBtn');
+    if (deleteBtn) {
+        deleteBtn.style.display = count > 0 ? 'inline-flex' : 'none';
+    }
+}
+
+async function bulkAction(action) {
+    const checkboxes = document.querySelectorAll('.user-checkbox:checked');
+    const userIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
+    
+    if (userIds.length === 0) {
+        alert('No users selected');
+        return;
+    }
+    
+    if (action === 'delete') {
+        if (!confirm(`Are you sure you want to delete ${userIds.length} user(s)?`)) {
+            return;
+        }
+    }
+    
+    try {
+        const response = await fetch('/admin-dashboard/bulk-action/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                action: action,
+                user_ids: userIds
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error performing bulk action');
+        console.error(error);
+    }
+}
+
+function bulkActivate() {
+    bulkAction('activate');
+}
+
+function bulkDeactivate() {
+    bulkAction('deactivate');
+}
+
+function bulkDelete() {
+    bulkAction('delete');
+}
+
+async function toggleUserStatus(userId) {
+    try {
+        const response = await fetch(`/admin-dashboard/toggle-status/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error toggling user status');
+        console.error(error);
+    }
+}
+
+// Close modals on outside click
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('show');
+    }
+}
+</script>
+{% endblock %}

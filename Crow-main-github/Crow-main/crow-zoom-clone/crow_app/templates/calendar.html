@@ -1,0 +1,791 @@
+{% extends 'base.html' %}
+
+{% block title %}Schedule | Crow{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* CSS Variables - Define fallbacks */
+    :root {
+        --primary: #2563eb;
+        --danger: #dc2626;
+        --dark: #1f2937;
+        --gray: #6b7280;
+        --gray-light: #9ca3af;
+        --light-gray: #f3f4f6;
+        --light: #f9fafb;
+        --border-gray: #e5e7eb;
+        --white: #ffffff;
+        --space-xs: 4px;
+        --space-sm: 8px;
+        --space-md: 16px;
+        --space-lg: 24px;
+        --space-xl: 32px;
+        --radius-md: 8px;
+        --radius-lg: 12px;
+    }
+
+    /* Calendar Specific Styles */
+    .calendar-container {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-gray);
+        padding: var(--space-lg);
+    }
+    
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-lg);
+        padding-bottom: var(--space-md);
+        border-bottom: 1px solid var(--border-gray);
+    }
+    
+    .calendar-nav {
+        display: flex;
+        gap: var(--space-sm);
+    }
+    
+    .calendar-nav-btn {
+        background: var(--light-gray);
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 16px;
+        color: var(--dark);
+    }
+    
+    .calendar-nav-btn:hover {
+        background: var(--border-gray);
+    }
+    
+    .calendar-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--dark);
+        margin: 0;
+    }
+    
+    /* Days of Week */
+    .calendar-weekdays {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: var(--space-sm);
+        margin-bottom: var(--space-sm);
+        text-align: center;
+    }
+    
+    .weekday {
+        padding: var(--space-sm);
+        font-weight: 600;
+        color: var(--gray);
+        font-size: 0.9rem;
+    }
+    
+    /* Calendar Grid */
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: var(--space-sm);
+    }
+    
+    .calendar-day {
+        min-height: 100px;
+        padding: var(--space-sm);
+        border: 1px solid var(--border-gray);
+        border-radius: var(--radius-md);
+        background: var(--white);
+        transition: all 0.2s;
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .calendar-day:hover {
+        background: var(--light-gray);
+        transform: translateY(-2px);
+    }
+    
+    .calendar-day.today {
+        border-color: var(--primary);
+        background: #eff6ff;
+    }
+    
+    .calendar-day.selected {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: white;
+    }
+    
+    .calendar-day.other-month {
+        color: var(--gray-light);
+        background: var(--light);
+    }
+    
+    .day-number {
+        font-weight: 600;
+        margin-bottom: var(--space-xs);
+        font-size: 0.9rem;
+    }
+    
+    /* Meeting Events */
+    .calendar-event {
+        font-size: 0.75rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-bottom: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        cursor: pointer;
+    }
+    
+    .calendar-event:hover {
+        opacity: 0.8;
+    }
+    
+    .event-team {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .event-client {
+        background: #f3e8ff;
+        color: #7c3aed;
+    }
+    
+    .event-personal {
+        background: #dcfce7;
+        color: #166534;
+    }
+    
+    /* Sidebar */
+    .calendar-sidebar {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--border-gray);
+        padding: var(--space-lg);
+        height: fit-content;
+    }
+    
+    .today-section {
+        margin-bottom: var(--space-xl);
+    }
+    
+    .today-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: var(--space-md);
+        color: var(--dark);
+    }
+    
+    .today-date {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--primary);
+        margin-bottom: var(--space-lg);
+    }
+    
+    /* Meeting List */
+    .meeting-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+    
+    .meeting-item {
+        padding: var(--space-md);
+        border: 1px solid var(--border-gray);
+        border-radius: var(--radius-md);
+        background: var(--white);
+        transition: all 0.2s;
+        position: relative;
+    }
+    
+    .meeting-item:hover {
+        border-color: var(--primary);
+        background: var(--light-gray);
+    }
+    
+    .meeting-time {
+        font-size: 0.9rem;
+        color: var(--primary);
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    
+    .meeting-title {
+        font-weight: 500;
+        margin-bottom: 2px;
+        color: var(--dark);
+    }
+    
+    .meeting-details {
+        font-size: 0.8rem;
+        color: var(--gray);
+    }
+
+    .meeting-actions {
+        margin-top: 8px;
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-delete {
+        background: var(--danger);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 6px;
+        border: none;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-delete:hover {
+        background: #b91c1c;
+    }
+    
+    /* Quick Schedule Form */
+    .quick-schedule {
+        background: var(--light);
+        border-radius: var(--radius-lg);
+        padding: var(--space-lg);
+        margin-top: var(--space-xl);
+    }
+    
+    .schedule-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: var(--space-lg);
+        color: var(--dark);
+    }
+    
+    .form-group {
+        margin-bottom: var(--space-md);
+    }
+    
+    .form-label {
+        display: block;
+        margin-bottom: var(--space-xs);
+        font-weight: 500;
+        color: var(--dark);
+        font-size: 0.9rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border-gray);
+        border-radius: var(--radius-md);
+        font-size: 0.9rem;
+        color: var(--dark);
+        background: var(--white);
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: var(--space-xl);
+        color: var(--gray);
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: var(--space-md);
+        opacity: 0.3;
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 10px 16px;
+        border-radius: var(--radius-md);
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.9rem;
+    }
+    
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: #1d4ed8;
+    }
+    
+    .btn-secondary {
+        background: var(--light-gray);
+        color: var(--dark);
+    }
+    
+    .btn-secondary:hover {
+        background: var(--border-gray);
+    }
+    
+    .w-100 {
+        width: 100%;
+    }
+    
+    .d-none {
+        display: none !important;
+    }
+
+    /* Modal */
+    .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+    }
+
+    .modal.show {
+        display: flex;
+    }
+
+    .modal-content {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 28px;
+        cursor: pointer;
+        color: var(--gray);
+        line-height: 1;
+    }
+
+    .close-btn:hover {
+        color: var(--dark);
+    }
+    
+    /* Responsive */
+    @media (max-width: 992px) {
+        .grid {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .calendar-container {
+            margin-bottom: var(--space-lg);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .calendar-day {
+            min-height: 80px;
+        }
+        
+        .calendar-event {
+            font-size: 0.7rem;
+            padding: 1px 4px;
+        }
+        
+        .calendar-title {
+            font-size: 1.2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1400px; margin: 0 auto; padding: 24px;">
+    <h1 class="mb-4" style="font-size: 2rem; font-weight: 700; color: var(--dark);">Schedule</h1>
+    <p style="color: var(--gray); font-size: 1.1rem; margin-bottom: 24px;">Plan and manage your video meetings</p>
+    
+    <div class="grid" style="display: grid; grid-template-columns: 1fr 350px; gap: 32px;">
+        
+        <!-- Main Calendar -->
+        <div class="calendar-container">
+            <div class="calendar-header">
+                <div>
+                    <h2 class="calendar-title" id="currentMonthYear">January 2025</h2>
+                </div>
+                <div class="calendar-nav">
+                    <button class="calendar-nav-btn" onclick="changeMonth(-1)">
+                        ←
+                    </button>
+                    <button class="calendar-nav-btn" onclick="goToToday()">
+                        Today
+                    </button>
+                    <button class="calendar-nav-btn" onclick="changeMonth(1)">
+                        →
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Days of Week -->
+            <div class="calendar-weekdays">
+                <div class="weekday">Sun</div>
+                <div class="weekday">Mon</div>
+                <div class="weekday">Tue</div>
+                <div class="weekday">Wed</div>
+                <div class="weekday">Thu</div>
+                <div class="weekday">Fri</div>
+                <div class="weekday">Sat</div>
+            </div>
+            
+            <!-- Calendar Days Grid -->
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- Calendar days will be generated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="calendar-sidebar">
+            <!-- Today's Date -->
+            <div class="today-section">
+                <h3 class="today-title">Selected Date</h3>
+                <div class="today-date" id="todayDate">{{ now.day }}</div>
+                
+                <!-- Today's Meetings -->
+                <div class="meeting-list" id="todayMeetings"></div>
+                
+                <!-- Empty State -->
+                <div class="empty-state" id="emptyMeetings">
+                    <div class="empty-icon">📅</div>
+                    <p>No meetings scheduled</p>
+                </div>
+            </div>
+            
+            <!-- Quick Schedule Form -->
+            <div class="quick-schedule">
+                <h3 class="schedule-title">Schedule Meeting</h3>
+                
+                <form id="scheduleForm" method="POST" action="{% url 'calendar' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="form-label">Meeting Title</label>
+                        <input name="title" type="text" class="form-control" placeholder="Team meeting, Client call..." required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Date & Time</label>
+                        <input name="scheduled_time" type="datetime-local" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Duration (minutes)</label>
+                        <select name="duration" class="form-control">
+                            <option value="15">15 minutes</option>
+                            <option value="30" selected>30 minutes</option>
+                            <option value="45">45 minutes</option>
+                            <option value="60">1 hour</option>
+                            <option value="120">2 hours</option>
+                        </select>
+                    </div>
+                    
+                    {% if user_classes %}
+                    <div class="form-group">
+                        <label class="form-label">
+                            <input type="checkbox" name="restrict_to_classes" id="restrict_to_classes">
+                            Restrict to specific teams
+                        </label>
+                    </div>
+                    
+                    <div class="form-group d-none" id="class_selection">
+                        <label class="form-label">Select Teams:</label>
+                        {% for membership in user_classes %}
+                        <div>
+                            <label style="font-weight: normal; display: flex; align-items: center; gap: 8px;">
+                                <input type="checkbox" name="allowed_classes" value="{{ membership.user_class.id }}">
+                                {{ membership.user_class.code }} - {{ membership.user_class.name }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-calendar-plus" style="margin-right: 8px;"></i>
+                        Schedule Meeting
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Delete Meeting</h3>
+            <button class="close-btn" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <p>Are you sure you want to delete this meeting?</p>
+        <p id="deleteMeetingTitle" style="font-weight: 600; color: var(--dark);"></p>
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+            <form id="deleteForm" method="POST" style="flex: 1;">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="meeting_id" id="deleteMeetingId">
+                <button type="submit" class="btn-delete" style="width: 100%; padding: 10px;">
+                    <i class="fas fa-trash" style="margin-right: 8px;"></i>Delete Meeting
+                </button>
+            </form>
+            <button class="btn btn-secondary" onclick="closeDeleteModal()" style="flex: 1;">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Calendar Data
+    let currentDate = new Date();
+    let selectedDate = new Date();
+    
+    // Get meetings from Django backend
+    const backendMeetings = {{ meetings_json|safe }};
+    const meetingsData = {{ meetings_data|safe }}; // Full meeting data with IDs
+    
+    // Initialize Calendar
+    document.addEventListener('DOMContentLoaded', function() {
+        renderCalendar();
+        updateTodaySection();
+        
+        // Team restriction toggle
+        const restrictCheckbox = document.getElementById('restrict_to_classes');
+        const classSelection = document.getElementById('class_selection');
+        
+        if (restrictCheckbox && classSelection) {
+            restrictCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    classSelection.classList.remove('d-none');
+                } else {
+                    classSelection.classList.add('d-none');
+                }
+            });
+        }
+    });
+    
+    // Render Calendar Grid
+    function renderCalendar() {
+        const calendarGrid = document.getElementById('calendarGrid');
+        const monthYear = document.getElementById('currentMonthYear');
+        
+        // Clear existing grid
+        calendarGrid.innerHTML = '';
+        
+        // Update month/year display
+        const options = { year: 'numeric', month: 'long' };
+        monthYear.textContent = currentDate.toLocaleDateString('en-US', options);
+        
+        // Get first day of month
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        
+        // Calculate days from previous month
+        const startDay = firstDay.getDay(); // 0 = Sunday
+        
+        // Add days from previous month
+        const prevMonthLastDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+        for (let i = startDay - 1; i >= 0; i--) {
+            const day = prevMonthLastDay - i;
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, day);
+            calendarGrid.appendChild(createDayElement(date, true));
+        }
+        
+        // Add days from current month
+        for (let day = 1; day <= lastDay.getDate(); day++) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+            calendarGrid.appendChild(createDayElement(date, false));
+        }
+        
+        // Add days from next month to complete grid
+        const totalCells = 42; // 6 weeks * 7 days
+        const cellsUsed = startDay + lastDay.getDate();
+        for (let day = 1; day <= (totalCells - cellsUsed); day++) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, day);
+            calendarGrid.appendChild(createDayElement(date, true));
+        }
+    }
+    
+    // Create Day Element
+    function createDayElement(date, isOtherMonth) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'calendar-day';
+        
+        // Check if today
+        const today = new Date();
+        if (date.toDateString() === today.toDateString()) {
+            dayDiv.classList.add('today');
+        }
+        
+        // Check if selected
+        if (date.toDateString() === selectedDate.toDateString()) {
+            dayDiv.classList.add('selected');
+        }
+        
+        // Add other month class
+        if (isOtherMonth) {
+            dayDiv.classList.add('other-month');
+        }
+        
+        // Day number
+        const dayNumber = document.createElement('div');
+        dayNumber.className = 'day-number';
+        dayNumber.textContent = date.getDate();
+        dayDiv.appendChild(dayNumber);
+        
+        // Add events for this day from backend
+        const dateString = date.toISOString().split('T')[0];
+        if (backendMeetings && backendMeetings[dateString]) {
+            backendMeetings[dateString].forEach(meeting => {
+                const eventDiv = document.createElement('div');
+                eventDiv.className = 'calendar-event event-team';
+                eventDiv.textContent = meeting.time ? `${meeting.time} ${meeting.title}` : meeting.title;
+                eventDiv.title = meeting.title;
+                dayDiv.appendChild(eventDiv);
+            });
+        }
+        
+        // Click handler
+        dayDiv.onclick = () => {
+            selectedDate = date;
+            renderCalendar();
+            updateTodaySection();
+            
+            // Update datetime input to selected date
+            const dateInput = document.querySelector('input[name="scheduled_time"]');
+            if (dateInput) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(new Date().getHours() + 1).padStart(2, '0');
+                dateInput.value = `${year}-${month}-${day}T${hours}:00`;
+            }
+        };
+        
+        return dayDiv;
+    }
+    
+    // Update Today's Section
+    function updateTodaySection() {
+        const todayDate = document.getElementById('todayDate');
+        const todayMeetings = document.getElementById('todayMeetings');
+        const emptyMeetings = document.getElementById('emptyMeetings');
+        
+        // Update date
+        todayDate.textContent = selectedDate.getDate();
+        
+        // Check for meetings
+        const dateString = selectedDate.toISOString().split('T')[0];
+        const meetings = meetingsData && meetingsData[dateString] ? meetingsData[dateString] : [];
+
+        if (meetings.length > 0) {
+            emptyMeetings.classList.add('d-none');
+            todayMeetings.innerHTML = '';
+            
+            meetings.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'meeting-item';
+                
+                const time = document.createElement('div');
+                time.className = 'meeting-time';
+                time.textContent = m.time || 'All day';
+                
+                const title = document.createElement('div');
+                title.className = 'meeting-title';
+                title.textContent = m.title;
+                
+                const actions = document.createElement('div');
+                actions.className = 'meeting-actions';
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-delete';
+                deleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete';
+                deleteBtn.onclick = () => showDeleteModal(m.id, m.title);
+                
+                actions.appendChild(deleteBtn);
+                
+                item.appendChild(time);
+                item.appendChild(title);
+                item.appendChild(actions);
+                todayMeetings.appendChild(item);
+            });
+        } else {
+            emptyMeetings.classList.remove('d-none');
+            todayMeetings.innerHTML = '';
+        }
+    }
+    
+    // Show Delete Modal
+    function showDeleteModal(meetingId, meetingTitle) {
+        const modal = document.getElementById('deleteModal');
+        const titleEl = document.getElementById('deleteMeetingTitle');
+        const idInput = document.getElementById('deleteMeetingId');
+        
+        titleEl.textContent = meetingTitle;
+        idInput.value = meetingId;
+        modal.classList.add('show');
+    }
+    
+    // Close Delete Modal
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.classList.remove('show');
+    }
+    
+    // Change Month
+    function changeMonth(direction) {
+        currentDate.setMonth(currentDate.getMonth() + direction);
+        renderCalendar();
+    }
+    
+    // Go to Today
+    function goToToday() {
+        currentDate = new Date();
+        selectedDate = new Date();
+        renderCalendar();
+        updateTodaySection();
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+</script>
+{% endblock %}

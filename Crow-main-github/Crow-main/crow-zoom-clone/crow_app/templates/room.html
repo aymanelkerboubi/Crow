@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="room-header d-flex justify-content-between align-items-center">
+    <div>
+      <h2 class="mb-1">{{ room.name }}</h2>
+      <div class="text-muted small">Host: {{ room.host.username }} • Created: {{ room.created_at }}</div>
+    </div>
+
+    <div class="room-actions">
+      <button class="btn btn-outline-secondary" onclick="copyRoomLink()">Share</button>
+      {% if is_host %}
+        <form method="post" style="display:inline;" onsubmit="return confirm('Delete this room?');">
+          {% csrf_token %}
+          <input type="hidden" name="delete_room" value="1" />
+          <button class="btn btn-danger">Delete</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if require_password %}
+    <div class="card mt-4 p-3">
+      <p>This room is private. Enter the password to join.</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group mb-2">
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-primary">Enter Room</button>
+      </form>
+      {% if messages %}
+        <ul class="mt-2">
+          {% for message in messages %}
+            <li class="text-danger">{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="room-main mt-4">
+      <form method="post" style="display:inline;" class="mb-3">
+        {% csrf_token %}
+        <button type="submit" name="join_room" value="1" class="btn btn-primary">Join Room</button>
+      </form>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card p-3 mb-3">
+            <h5>Members</h5>
+            {% if members and members.object_list %}
+              <ul class="list-unstyled">
+                {% for member in members.object_list %}
+                  <li class="py-1">{{ member.username }}</li>
+                {% endfor %}
+              </ul>
+              <div class="mt-2">
+                {% if members.has_previous %}
+                  <a href="?members_page={{ members.previous_page_number }}" class="btn btn-secondary btn-sm">Previous</a>
+                {% endif %}
+                {% if members.has_next %}
+                  <a href="?members_page={{ members.next_page_number }}" class="btn btn-secondary btn-sm">Next</a>
+                {% endif %}
+              </div>
+            {% else %}
+              <p class="text-muted">No members yet.</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card p-3 mb-3">
+            <h5>History</h5>
+            {% if history and history.object_list %}
+              <ul class="list-unstyled">
+                {% for meet in history.object_list %}
+                  <li class="py-1">
+                    <strong>{{ meet.title }}</strong>
+                    <div class="small text-muted">{{ meet.scheduled_time }}</div>
+                  </li>
+                {% endfor %}
+              </ul>
+              <div class="mt-2">
+                {% if history.has_previous %}
+                  <a href="?history_page={{ history.previous_page_number }}" class="btn btn-secondary btn-sm">Previous</a>
+                {% endif %}
+                {% if history.has_next %}
+                  <a href="?history_page={{ history.next_page_number }}" class="btn btn-secondary btn-sm">Next</a>
+                {% endif %}
+              </div>
+            {% else %}
+              <p class="text-muted">No meetings scheduled or held in this room yet.</p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <script>
+    function copyRoomLink() {
+      const url = window.location.origin + "{% url 'room_detail' room_id=room.id %}";
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() {
+          alert('Room link copied to clipboard');
+        }).catch(function() {
+          prompt('Copy this link:', url);
+        });
+      } else {
+        prompt('Copy this link:', url);
+      }
+    }
+  </script>
+
+{% endblock %}
