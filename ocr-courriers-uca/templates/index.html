@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Module OCR Courriers — Université Cadi Ayyad</title>
+<link rel="icon" href="download.jpg" type="image/jpg">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Source+Sans+3:wght@300;400;500;600;700&family=Noto+Kufi+Arabic:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--uca-terracotta:#C1512D;--uca-terracotta-dark:#9A3E1F;--uca-orange:#E67E22;--uca-orange-glow:#F39C12;--uca-sand:#F5EDE3;--uca-sand-light:#FAF6F1;--uca-sand-warm:#EDE0D0;--uca-charcoal:#2C2C2C;--uca-slate:#4A4A4A;--uca-text:#3B3028;--uca-text-light:#7A6E63;--uca-border:#DDD0C2;--uca-success:#2E7D5B;--uca-success-bg:#E8F5EE;--uca-warning:#D4890A;--uca-warning-bg:#FFF8E7;--uca-danger:#C0392B;--uca-danger-bg:#FDEDEB;--uca-info:#2980B9;--uca-info-bg:#EBF5FB;--shadow-sm:0 1px 3px rgba(93,64,55,.08);--shadow-md:0 4px 16px rgba(93,64,55,.10);--shadow-lg:0 8px 32px rgba(93,64,55,.14);--radius-sm:6px;--radius-md:10px;--radius-lg:16px;--radius-xl:24px}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Source Sans 3',sans-serif;background:var(--uca-sand-light);color:var(--uca-text);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 10% 20%,rgba(193,81,45,.04) 0%,transparent 50%),radial-gradient(ellipse at 90% 80%,rgba(230,126,34,.03) 0%,transparent 50%),url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23C1512D' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");pointer-events:none;z-index:-1}
+.app-layout{display:flex;min-height:100vh}
+.sidebar{width:270px;background:linear-gradient(175deg,var(--uca-charcoal),#1A1A1A);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;transition:transform .35s cubic-bezier(.4,0,.2,1);overflow-y:auto}
+.sidebar-brand{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:12px}
+.logo-mark{width:44px;height:44px;background:linear-gradient(135deg,var(--uca-terracotta),var(--uca-orange));border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0;box-shadow:0 4px 12px rgba(193,81,45,.4)}
+.brand-name{font-family:'Playfair Display',serif;color:#fff;font-size:14px;font-weight:700;line-height:1.2}
+.brand-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;letter-spacing:.5px;text-transform:uppercase}
+.sidebar-section-label{padding:18px 18px 6px;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,.25);font-weight:600}
+.sidebar-nav{list-style:none;padding:0 8px}.sidebar-nav li{margin-bottom:1px}
+.sidebar-nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;color:rgba(255,255,255,.55);text-decoration:none;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;transition:all .2s;cursor:pointer;position:relative}
+.sidebar-nav a:hover{background:rgba(255,255,255,.06);color:rgba(255,255,255,.85)}
+.sidebar-nav a.active{background:linear-gradient(135deg,rgba(193,81,45,.25),rgba(230,126,34,.15));color:var(--uca-orange-glow)}
+.sidebar-nav a.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:22px;background:var(--uca-orange);border-radius:0 4px 4px 0}
+.sidebar-nav a i{width:18px;text-align:center;font-size:14px}
+.sidebar-badge{margin-left:auto;background:var(--uca-terracotta);color:#fff;font-size:10px;padding:2px 7px;border-radius:10px;font-weight:600}
+.sidebar-footer{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.06)}
+.sidebar-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--uca-terracotta),var(--uca-orange));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px}
+.sidebar-user-name{color:rgba(255,255,255,.8);font-size:12.5px;font-weight:600}
+.sidebar-user-role{color:rgba(255,255,255,.35);font-size:10.5px}
+.main-content{margin-left:270px;flex:1;min-height:100vh}
+.top-header{background:#fff;border-bottom:1px solid var(--uca-border);padding:0 28px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow-sm)}
+.breadcrumb{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--uca-text-light)}.breadcrumb a{color:var(--uca-terracotta);text-decoration:none;font-weight:500}.breadcrumb .sep{opacity:.3}
+.header-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--uca-border);background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--uca-text-light);transition:all .2s;position:relative}
+.header-btn:hover{border-color:var(--uca-terracotta);color:var(--uca-terracotta)}
+.notif-dot{position:absolute;top:7px;right:7px;width:7px;height:7px;background:var(--uca-danger);border-radius:50%;border:2px solid #fff}
+.mobile-toggle{display:none;background:none;border:none;font-size:20px;color:var(--uca-text);cursor:pointer}
+.lang-indicator{display:inline-flex;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.lang-fr{background:#EBF5FB;color:#2471A3}.lang-ar{background:#F5EEF8;color:#7D3C98}
+.page-content{padding:24px 28px}.section-hidden{display:none!important}
+.page-title-bar{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px}
+.page-title h1{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;color:var(--uca-charcoal);margin-bottom:3px}
+.page-title p{color:var(--uca-text-light);font-size:13.5px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:var(--radius-md);padding:18px 20px;border:1px solid var(--uca-border);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px;transition:all .25s}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.stat-icon{width:44px;height:44px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.stat-icon.terracotta{background:rgba(193,81,45,.1);color:var(--uca-terracotta)}.stat-icon.success{background:var(--uca-success-bg);color:var(--uca-success)}.stat-icon.warning{background:var(--uca-warning-bg);color:var(--uca-warning)}.stat-icon.info{background:var(--uca-info-bg);color:var(--uca-info)}
+.stat-value{font-size:22px;font-weight:700;color:var(--uca-charcoal);line-height:1.1;font-family:'Playfair Display',serif}
+.stat-label{font-size:11.5px;color:var(--uca-text-light);margin-top:2px;font-weight:500}
+.panel{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--uca-border);box-shadow:var(--shadow-sm);margin-bottom:20px;overflow:hidden}
+.panel-header{padding:16px 22px;border-bottom:1px solid var(--uca-border);display:flex;align-items:center;justify-content:space-between}
+.panel-header h2{font-family:'Playfair Display',serif;font-size:17px;font-weight:700;color:var(--uca-charcoal);display:flex;align-items:center;gap:9px}
+.panel-header h2 i{color:var(--uca-terracotta);font-size:15px}
+.panel-body{padding:22px}
+.upload-zone{border:2px dashed var(--uca-border);border-radius:var(--radius-lg);padding:44px 28px;text-align:center;transition:all .3s;cursor:pointer;background:var(--uca-sand-light);position:relative}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--uca-terracotta);background:rgba(193,81,45,.03)}
+.upload-icon{width:68px;height:68px;background:linear-gradient(135deg,var(--uca-terracotta),var(--uca-orange));border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:26px;color:#fff;box-shadow:0 8px 24px rgba(193,81,45,.3)}
+.upload-zone h3{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--uca-charcoal);margin-bottom:6px}
+.upload-zone p{color:var(--uca-text-light);font-size:13.5px}
+.upload-zone .formats{font-size:12px;color:var(--uca-text-light);opacity:.7;margin-top:10px}
+.upload-zone .formats span{display:inline-block;background:var(--uca-sand-warm);padding:3px 10px;border-radius:12px;margin:2px 3px;font-weight:500;font-family:'JetBrains Mono',monospace;font-size:11px}
+.upload-zone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.file-queue{margin-top:18px;display:flex;flex-direction:column;gap:8px}
+.file-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--uca-sand-light);border-radius:var(--radius-md);border:1px solid var(--uca-border);animation:slideIn .3s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.file-icon{width:40px;height:40px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.file-icon.pdf{background:#FDEDEB;color:#C0392B}.file-icon.img{background:#EBF5FB;color:#2980B9}
+.file-name{font-weight:600;font-size:13.5px;color:var(--uca-charcoal)}.file-meta{font-size:11.5px;color:var(--uca-text-light);margin-top:1px}
+.file-status{font-size:11.5px;padding:3px 11px;border-radius:12px;font-weight:600}
+.file-status.pending{background:var(--uca-warning-bg);color:var(--uca-warning)}.file-status.done{background:var(--uca-success-bg);color:var(--uca-success)}
+.file-remove{background:none;border:none;color:var(--uca-text-light);cursor:pointer;font-size:15px;padding:4px;border-radius:4px;transition:all .2s}
+.file-remove:hover{color:var(--uca-danger);background:var(--uca-danger-bg)}
+.action-bar{display:flex;align-items:center;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid var(--uca-border)}
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;border-radius:var(--radius-sm);font-weight:600;font-size:13.5px;cursor:pointer;border:none;transition:all .25s;font-family:'Source Sans 3',sans-serif}
+.btn-primary{background:linear-gradient(135deg,var(--uca-terracotta),var(--uca-terracotta-dark));color:#fff;box-shadow:0 4px 12px rgba(193,81,45,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(193,81,45,.4)}
+.btn-outline{background:#fff;color:var(--uca-terracotta);border:1.5px solid var(--uca-terracotta)}
+.btn-outline:hover{background:rgba(193,81,45,.04)}
+.btn-ghost{background:transparent;color:var(--uca-text-light);border:1px solid var(--uca-border)}
+.btn-ghost:hover{background:var(--uca-sand-light);color:var(--uca-text)}
+.btn-success{background:var(--uca-success);color:#fff;box-shadow:0 4px 12px rgba(46,125,91,.3)}
+.btn-success:hover{transform:translateY(-1px)}
+.processing-overlay{display:none;position:fixed;inset:0;background:rgba(44,44,44,.6);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center}
+.processing-overlay.active{display:flex}
+.processing-card{background:#fff;border-radius:var(--radius-xl);padding:44px;text-align:center;max-width:420px;width:90%;box-shadow:0 16px 48px rgba(93,64,55,.18);animation:modalIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes modalIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.processing-spinner{width:60px;height:60px;border:3px solid var(--uca-sand-warm);border-top-color:var(--uca-terracotta);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.processing-card h3{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:6px}
+.processing-card>p{color:var(--uca-text-light);font-size:13px}
+.processing-steps{margin-top:24px;text-align:left}
+.processing-step{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:13px;color:var(--uca-text-light);transition:all .3s}
+.processing-step.active{color:var(--uca-terracotta);font-weight:600}
+.processing-step.done{color:var(--uca-success)}
+.step-icon{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;border:2px solid var(--uca-border);background:#fff}
+.processing-step.active .step-icon{border-color:var(--uca-terracotta);background:rgba(193,81,45,.1);color:var(--uca-terracotta);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(193,81,45,.3)}50%{box-shadow:0 0 0 6px rgba(193,81,45,0)}}
+.processing-step.done .step-icon{border-color:var(--uca-success);background:var(--uca-success);color:#fff}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
+.ocr-text-panel{background:var(--uca-sand-light);border-radius:var(--radius-md);border:1px solid var(--uca-border);max-height:620px;display:flex;flex-direction:column}
+.panel-sub-header{padding:12px 16px;border-bottom:1px solid var(--uca-border);font-weight:600;font-size:13.5px;display:flex;align-items:center;gap:7px;color:var(--uca-charcoal);background:#fff;border-radius:var(--radius-md) var(--radius-md) 0 0}
+.ocr-text-content{padding:16px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;color:var(--uca-slate);white-space:pre-wrap;flex:1}
+.extraction-form{display:flex;flex-direction:column;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-label{font-size:12.5px;font-weight:600;color:var(--uca-charcoal);display:flex;align-items:center;justify-content:space-between}
+.confidence-badge{font-size:10.5px;padding:2px 7px;border-radius:10px;font-weight:600}
+.confidence-high{background:var(--uca-success-bg);color:var(--uca-success)}.confidence-medium{background:var(--uca-warning-bg);color:var(--uca-warning)}.confidence-low{background:var(--uca-danger-bg);color:var(--uca-danger)}
+.form-input,.form-textarea,.form-select{padding:9px 12px;border:1.5px solid var(--uca-border);border-radius:var(--radius-sm);font-family:'Source Sans 3',sans-serif;font-size:13.5px;color:var(--uca-text);background:#fff;transition:all .2s;width:100%}
+.form-input:focus,.form-textarea:focus,.form-select:focus{outline:none;border-color:var(--uca-terracotta);box-shadow:0 0 0 3px rgba(193,81,45,.1)}
+.form-textarea{resize:vertical;min-height:70px;line-height:1.6}
+.search-container{display:flex;gap:10px;margin-bottom:18px}
+.search-input-wrap{flex:1;position:relative}
+.search-input-wrap i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--uca-text-light);font-size:15px}
+.search-input{width:100%;padding:11px 12px 11px 38px;border:1.5px solid var(--uca-border);border-radius:var(--radius-sm);font-size:13.5px;font-family:'Source Sans 3',sans-serif;color:var(--uca-text);background:#fff;transition:all .2s}
+.search-input:focus{outline:none;border-color:var(--uca-terracotta);box-shadow:0 0 0 3px rgba(193,81,45,.1)}
+.search-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.filter-chip{padding:5px 13px;border-radius:20px;border:1.5px solid var(--uca-border);background:#fff;font-size:12.5px;cursor:pointer;transition:all .2s;font-weight:500;color:var(--uca-text-light);font-family:'Source Sans 3',sans-serif}
+.filter-chip:hover{border-color:var(--uca-terracotta);color:var(--uca-terracotta)}
+.filter-chip.active{background:var(--uca-terracotta);color:#fff;border-color:var(--uca-terracotta)}
+.search-results{display:flex;flex-direction:column;gap:10px}
+.search-result-card{padding:16px 20px;border:1px solid var(--uca-border);border-radius:var(--radius-md);background:#fff;transition:all .2s;cursor:pointer}
+.search-result-card:hover{border-color:var(--uca-terracotta);box-shadow:var(--shadow-md)}
+.search-result-ref{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--uca-terracotta);font-weight:600}
+.search-result-date{font-size:11.5px;color:var(--uca-text-light)}
+.search-result-title{font-weight:600;font-size:14px;color:var(--uca-charcoal);margin-bottom:5px}
+.search-result-excerpt{font-size:12.5px;color:var(--uca-text-light);line-height:1.6}
+.search-result-excerpt mark{background:rgba(230,126,34,.2);color:var(--uca-terracotta-dark);padding:1px 3px;border-radius:2px;font-weight:600}
+.search-result-meta{display:flex;gap:14px;margin-top:8px;font-size:11.5px;color:var(--uca-text-light)}
+.search-result-meta span{display:flex;align-items:center;gap:4px}
+.doc-type-badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11px;font-weight:600}
+.doc-type-badge.lettre{background:rgba(41,128,185,.1);color:#2980B9}.doc-type-badge.bordereau{background:rgba(142,68,173,.1);color:#8E44AD}.doc-type-badge.note{background:rgba(39,174,96,.1);color:#27AE60}
+.table-wrap{overflow-x:auto}.data-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.data-table thead th{padding:11px 14px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--uca-text-light);border-bottom:2px solid var(--uca-border);white-space:nowrap}
+.data-table tbody td{padding:12px 14px;border-bottom:1px solid var(--uca-border);vertical-align:middle}
+.data-table tbody tr:hover{background:var(--uca-sand-light)}.data-table tbody tr:last-child td{border-bottom:none}
+.api-endpoint{background:var(--uca-charcoal);border-radius:var(--radius-md);overflow:hidden;margin-bottom:14px}
+.api-endpoint-header{padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid rgba(255,255,255,.08)}
+.api-method{padding:3px 9px;border-radius:4px;font-size:11px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.api-method.post{background:rgba(46,125,91,.2);color:#4FD1C5}.api-method.get{background:rgba(41,128,185,.2);color:#63B3ED}
+.api-path{font-family:'JetBrains Mono',monospace;font-size:13px;color:rgba(255,255,255,.85)}
+.code-block{background:#1A1A1A;border-radius:var(--radius-sm);padding:14px;overflow-x:auto;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:#E0E0E0}
+.code-block .key{color:#63B3ED}.code-block .str{color:#68D391}.code-block .num{color:#F6AD55}.code-block .comment{color:#666;font-style:italic}
+.toast-container{position:fixed;top:74px;right:20px;z-index:300;display:flex;flex-direction:column;gap:6px}
+.toast{padding:12px 18px;border-radius:var(--radius-md);display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:500;box-shadow:var(--shadow-lg);animation:toastIn .4s cubic-bezier(.34,1.56,.64,1);min-width:280px}
+.toast.success{background:var(--uca-success);color:#fff}.toast.error{background:var(--uca-danger);color:#fff}.toast.info{background:var(--uca-info);color:#fff}
+@keyframes toastIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+.empty-state{text-align:center;padding:44px 20px;color:var(--uca-text-light)}
+.empty-state i{font-size:44px;opacity:.2;margin-bottom:14px}.empty-state h3{font-family:'Playfair Display',serif;color:var(--uca-charcoal);font-size:17px;margin-bottom:4px;opacity:.6}.empty-state p{font-size:13px;opacity:.7}
+.json-view{background:#1A1A1A;border-radius:var(--radius-md);padding:18px;font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.8;color:#E0E0E0;overflow-x:auto;max-height:380px;overflow-y:auto}
+@media(max-width:1024px){.stats-row{grid-template-columns:repeat(2,1fr)}.results-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main-content{margin-left:0}.mobile-toggle{display:block}.page-content{padding:18px 14px}.stats-row{grid-template-columns:1fr}}
+.fade-in{animation:fadeIn .5s ease}@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.stagger>*{animation:fadeIn .4s ease both}.stagger>*:nth-child(1){animation-delay:.05s}.stagger>*:nth-child(2){animation-delay:.1s}.stagger>*:nth-child(3){animation-delay:.15s}.stagger>*:nth-child(4){animation-delay:.2s}
+</style>
+</head>
+<body>
+<div class="toast-container" id="toastContainer"></div>
+<div class="processing-overlay" id="processingOverlay"><div class="processing-card"><div class="processing-spinner"></div><h3>Traitement OCR en cours...</h3><p>Analyse du document scanné</p><div class="processing-steps" id="processingSteps">
+<div class="processing-step"><div class="step-icon"><i class="fas fa-image"></i></div><span>Pré-traitement image (redressement, contraste)</span></div>
+<div class="processing-step"><div class="step-icon"><i class="fas fa-font"></i></div><span>Extraction OCR — Tesseract (fra+ara)</span></div>
+<div class="processing-step"><div class="step-icon"><i class="fas fa-brain"></i></div><span>Analyse NLP + Règles métiers</span></div>
+<div class="processing-step"><div class="step-icon"><i class="fas fa-check-double"></i></div><span>Extraction des champs structurés</span></div>
+<div class="processing-step"><div class="step-icon"><i class="fas fa-code"></i></div><span>Génération réponse JSON</span></div>
+</div></div></div>
+
+<div class="app-layout">
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand"><div class="logo-mark"><i class="fas fa-university"></i></div><div><span class="brand-name">Module OCR Courriers</span><div class="brand-sub">Pôle Digitalisation — UCA</div></div></div>
+  <div class="sidebar-section-label">Navigation</div>
+  <ul class="sidebar-nav">
+    <li><a class="active" data-page="dashboard" onclick="showPage('dashboard')"><i class="fas fa-th-large"></i> Tableau de bord</a></li>
+    <li><a data-page="import" onclick="showPage('import')"><i class="fas fa-cloud-upload-alt"></i> Import & OCR</a></li>
+    <li><a data-page="documents" onclick="showPage('documents')"><i class="fas fa-folder-open"></i> Courriers <span class="sidebar-badge" id="docCount">0</span></a></li>
+    <li><a data-page="search" onclick="showPage('search')"><i class="fas fa-search"></i> Recherche plein texte</a></li>
+  </ul>
+  <div class="sidebar-section-label">Technique</div>
+  <ul class="sidebar-nav">
+    <li><a data-page="api" onclick="showPage('api')"><i class="fas fa-plug"></i> API REST</a></li>
+    <li><a data-page="settings" onclick="showPage('settings')"><i class="fas fa-cog"></i> Paramètres OCR</a></li>
+  </ul>
+  <div class="sidebar-footer"><div style="display:flex;align-items:center;gap:10px"><div class="sidebar-avatar">A</div><div><div class="sidebar-user-name">Agent Bureau d'Ordre</div><div class="sidebar-user-role">Présidence — UCA Marrakech</div></div></div></div>
+</aside>
+
+<main class="main-content">
+<header class="top-header"><div style="display:flex;align-items:center;gap:14px"><button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')"><i class="fas fa-bars"></i></button><div class="breadcrumb"><a href="#">Accueil</a><span class="sep">/</span><span id="breadcrumbCurrent">Tableau de bord</span></div></div><div style="display:flex;align-items:center;gap:10px"><button class="header-btn"><i class="fas fa-bell"></i><span class="notif-dot"></span></button><span class="lang-indicator lang-fr">FR</span><span class="lang-indicator lang-ar">عربي</span></div></header>
+
+<!-- DASHBOARD -->
+<div class="page-content" id="page-dashboard">
+  <div class="page-title-bar"><div class="page-title"><h1>Tableau de Bord</h1><p>Module de lecture automatique des courriers scannés — Université Cadi Ayyad</p></div><button class="btn btn-primary" onclick="showPage('import')"><i class="fas fa-plus"></i> Nouveau courrier</button></div>
+  <div class="stats-row stagger"><div class="stat-card"><div class="stat-icon terracotta"><i class="fas fa-file-alt"></i></div><div><span class="stat-value" id="statTotal">0</span><div class="stat-label">Documents traités</div></div></div><div class="stat-card"><div class="stat-icon success"><i class="fas fa-check-circle"></i></div><div><span class="stat-value" id="statValidated">0</span><div class="stat-label">Validés par agent</div></div></div><div class="stat-card"><div class="stat-icon warning"><i class="fas fa-clock"></i></div><div><span class="stat-value" id="statPending">0</span><div class="stat-label">En attente</div></div></div><div class="stat-card"><div class="stat-icon info"><i class="fas fa-chart-line"></i></div><div><span class="stat-value" id="statAccuracy">—</span><div class="stat-label">Précision OCR</div></div></div></div>
+  <div class="panel fade-in"><div class="panel-header"><h2><i class="fas fa-project-diagram"></i> Pipeline de traitement</h2></div><div class="panel-body" style="text-align:center;padding:28px"><div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:10px;font-size:13px;font-weight:600"><div style="background:var(--uca-sand);padding:12px 18px;border-radius:10px;border:1.5px solid var(--uca-border)"><i class="fas fa-file-pdf" style="color:var(--uca-terracotta);margin-right:5px"></i>PDF / IMG</div><i class="fas fa-arrow-right" style="color:var(--uca-terracotta)"></i><div style="background:var(--uca-sand);padding:12px 18px;border-radius:10px;border:1.5px solid var(--uca-border)"><i class="fas fa-image" style="color:var(--uca-info);margin-right:5px"></i>Pré-traitement</div><i class="fas fa-arrow-right" style="color:var(--uca-terracotta)"></i><div style="background:var(--uca-sand);padding:12px 18px;border-radius:10px;border:1.5px solid var(--uca-border)"><i class="fas fa-font" style="color:var(--uca-success);margin-right:5px"></i>OCR Tesseract</div><i class="fas fa-arrow-right" style="color:var(--uca-terracotta)"></i><div style="background:var(--uca-sand);padding:12px 18px;border-radius:10px;border:1.5px solid var(--uca-border)"><i class="fas fa-brain" style="color:var(--uca-warning);margin-right:5px"></i>NLP + Regex</div><i class="fas fa-arrow-right" style="color:var(--uca-terracotta)"></i><div style="background:linear-gradient(135deg,var(--uca-terracotta),var(--uca-orange));padding:12px 18px;border-radius:10px;color:#fff"><i class="fas fa-code" style="margin-right:5px"></i>JSON</div></div></div></div>
+  <div class="panel fade-in"><div class="panel-header"><h2><i class="fas fa-history"></i> Derniers courriers</h2><button class="btn btn-ghost" onclick="showPage('documents')">Voir tout <i class="fas fa-arrow-right" style="margin-left:3px;font-size:11px"></i></button></div><div class="panel-body" id="recentDocsList"></div></div>
+</div>
+
+<!-- IMPORT -->
+<div class="page-content section-hidden" id="page-import">
+  <div class="page-title-bar"><div class="page-title"><h1>Import & Traitement OCR</h1><p>Importez vos courriers scannés pour extraction automatique des champs</p></div></div>
+  <div class="panel fade-in" id="uploadPanel"><div class="panel-header"><h2><i class="fas fa-cloud-upload-alt"></i> Import</h2></div><div class="panel-body">
+    <div class="upload-zone" id="uploadZone"><input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" multiple><div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div><h3>Glissez vos courriers scannés ici</h3><p>ou cliquez pour parcourir</p><div class="formats">Formats : <span>PDF</span> <span>JPG</span> <span>PNG</span></div></div>
+    <div class="file-queue" id="fileQueue"></div>
+    <div class="action-bar" id="actionBar" style="display:none"><button class="btn btn-primary" onclick="processFiles()"><i class="fas fa-cogs"></i> Lancer OCR</button><button class="btn btn-ghost" onclick="clearQueue()"><i class="fas fa-trash-alt"></i> Vider</button><span style="margin-left:auto;font-size:12px;color:var(--uca-text-light)" id="queueInfo"></span></div>
+  </div></div>
+  <div class="panel fade-in section-hidden" id="resultsPanel"><div class="panel-header"><h2><i class="fas fa-magic"></i> Résultats de l'extraction</h2><div style="display:flex;gap:6px"><button class="btn btn-ghost" onclick="toggleJson()"><i class="fas fa-code"></i> JSON</button><button class="btn btn-outline" onclick="resetImport()"><i class="fas fa-redo"></i> Nouveau</button></div></div><div class="panel-body">
+    <div class="results-grid">
+      <div class="ocr-text-panel"><div class="panel-sub-header"><i class="fas fa-file-alt"></i> Texte OCR brut extrait <span id="langDetected" style="margin-left:auto"></span></div><div class="ocr-text-content" id="ocrTextContent"></div></div>
+      <div><div style="margin-bottom:14px;display:flex;align-items:center;gap:7px"><i class="fas fa-clipboard-check" style="color:var(--uca-terracotta)"></i><strong style="font-size:14px">Formulaire pré-rempli</strong><span style="margin-left:auto;font-size:11.5px;color:var(--uca-text-light)">Vérifiez et corrigez</span></div>
+        <div class="extraction-form">
+          <div class="form-group"><label class="form-label">N° du courrier <span class="confidence-badge" id="confNum"></span></label><input type="text" class="form-input" id="fieldNumero"></div>
+          <div class="form-group"><label class="form-label">Date <span class="confidence-badge" id="confDate"></span></label><input type="text" class="form-input" id="fieldDate"></div>
+          <div class="form-group"><label class="form-label">Objet <span class="confidence-badge" id="confObjet"></span></label><input type="text" class="form-input" id="fieldObjet"></div>
+          <div class="form-group"><label class="form-label">Expéditeur <span class="confidence-badge" id="confExp"></span></label><input type="text" class="form-input" id="fieldExpediteur"></div>
+          <div class="form-group"><label class="form-label">Destinataire <span class="confidence-badge" id="confDest"></span></label><input type="text" class="form-input" id="fieldDestinataire"></div>
+          <div class="form-group"><label class="form-label">Type <span class="confidence-badge" id="confType"></span></label><select class="form-select" id="fieldType"><option value="lettre">Lettre administrative</option><option value="bordereau">Bordereau d'envoi</option><option value="note">Note de service</option><option value="circulaire">Circulaire</option><option value="autre">Autre</option></select></div>
+          <div class="form-group"><label class="form-label">Établissement émetteur <span class="confidence-badge" id="confEtab"></span></label><input type="text" class="form-input" id="fieldEtablissement" placeholder="FSJES-Marrakech, FST-Marrakech, La Présidence - Marrakech, etc."></div>
+          <div class="form-group"><label class="form-label">Corps du courrier</label><textarea class="form-textarea" id="fieldCorps" rows="4"></textarea></div>
+        </div>
+        <div class="action-bar"><button class="btn btn-success" onclick="validateDocument()"><i class="fas fa-check"></i> Valider et enregistrer</button><button class="btn btn-ghost" onclick="resetForm()"><i class="fas fa-undo"></i> Réinitialiser</button></div>
+      </div>
+    </div>
+    <div class="section-hidden" id="jsonViewPanel" style="margin-top:20px"><div style="margin-bottom:8px;display:flex;align-items:center;gap:7px"><i class="fas fa-code" style="color:var(--uca-terracotta)"></i><strong>Réponse JSON API</strong><button class="btn btn-ghost" style="margin-left:auto;padding:5px 12px;font-size:11.5px" onclick="copyJson()"><i class="fas fa-copy"></i> Copier</button></div><div class="json-view" id="jsonView"></div></div>
+  </div></div>
+</div>
+
+<!-- DOCUMENTS -->
+<div class="page-content section-hidden" id="page-documents">
+  <div class="page-title-bar"><div class="page-title"><h1>Courriers Traités</h1><p>Historique des documents analysés par OCR</p></div><button class="btn btn-primary" onclick="showPage('import')"><i class="fas fa-plus"></i> Importer</button></div>
+  <div class="panel fade-in"><div class="panel-body" style="padding:0"><div class="table-wrap"><table class="data-table"><thead><tr><th>N° Courrier</th><th>Date</th><th>Objet</th><th>Expéditeur</th><th>Type</th><th>Statut</th><th>Confiance</th></tr></thead><tbody id="documentsTableBody"></tbody></table></div></div></div>
+</div>
+
+<!-- SEARCH -->
+<div class="page-content section-hidden" id="page-search">
+  <div class="page-title-bar"><div class="page-title"><h1>Recherche Plein Texte</h1><p>Recherchez dans le contenu, l'objet et les métadonnées</p></div></div>
+  <div class="panel fade-in"><div class="panel-body">
+    <div class="search-container"><div class="search-input-wrap"><i class="fas fa-search"></i><input type="text" class="search-input" id="searchInput" placeholder="Rechercher : assises, bourse, coopération, budget, inscription..." oninput="performSearch()"></div><button class="btn btn-primary" onclick="performSearch()"><i class="fas fa-search"></i> Rechercher</button></div>
+    <div class="search-filters"><button class="filter-chip active" onclick="setFilter(this,'all')">Tout</button><button class="filter-chip" onclick="setFilter(this,'objet')">Objet</button><button class="filter-chip" onclick="setFilter(this,'contenu')">Contenu</button><button class="filter-chip" onclick="setFilter(this,'expediteur')">Expéditeur</button><button class="filter-chip" onclick="setFilter(this,'destinataire')">Destinataire</button></div>
+    <div class="search-results" id="searchResults"><div class="empty-state"><i class="fas fa-search"></i><h3>Lancez une recherche</h3><p>Tapez un mot-clé pour chercher dans les courriers indexés</p></div></div>
+  </div></div>
+</div>
+
+<!-- API -->
+<div class="page-content section-hidden" id="page-api">
+  <div class="page-title-bar"><div class="page-title"><h1>API REST</h1><p>Documentation des endpoints — FastAPI</p></div></div>
+  <div class="panel fade-in"><div class="panel-header"><h2><i class="fas fa-plug"></i> Endpoints</h2></div><div class="panel-body">
+    <div class="api-endpoint"><div class="api-endpoint-header"><span class="api-method post">POST</span><span class="api-path">/api/ocr/process</span></div><div style="padding:14px"><div class="code-block"><span class="comment">// Request: multipart/form-data</span>
+{ <span class="key">"file"</span>: <span class="str">"corr1.pdf"</span>, <span class="key">"language"</span>: <span class="str">"fra+ara"</span> }
+
+<span class="comment">// Response JSON</span>
+{
+  <span class="key">"numero"</span>: <span class="str">"400/UCA/2022/586"</span>,
+  <span class="key">"date"</span>: <span class="str">"27 janvier 2022"</span>,
+  <span class="key">"objet"</span>: <span class="str">"Organisation des Assises régionales..."</span>,
+  <span class="key">"expediteur"</span>: <span class="str">"Le Président — Moulay Lhassan HBID"</span>,
+  <span class="key">"destinataire"</span>: <span class="str">"Professeurs, Personnel, Étudiants"</span>,
+  <span class="key">"type_document"</span>: <span class="str">"lettre"</span>,
+  <span class="key">"texte_complet"</span>: <span class="str">"..."</span>,
+  <span class="key">"confidence"</span>: { <span class="key">"numero"</span>:<span class="num">88</span>, <span class="key">"date"</span>:<span class="num">95</span> }
+}</div></div></div>
+    <div class="api-endpoint"><div class="api-endpoint-header"><span class="api-method get">GET</span><span class="api-path">/api/courriers/search?q=assises&field=all</span></div><div style="padding:14px"><div class="code-block">{ <span class="key">"results"</span>: [...], <span class="key">"total"</span>: <span class="num">1</span> }</div></div></div>
+  </div></div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page-content section-hidden" id="page-settings">
+  <div class="page-title-bar"><div class="page-title"><h1>Paramètres OCR</h1><p>Configuration du moteur et des règles d'extraction</p></div></div>
+  <div class="panel fade-in"><div class="panel-header"><h2><i class="fas fa-sliders-h"></i> Configuration</h2></div><div class="panel-body">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="form-group"><label class="form-label">Moteur OCR</label><select class="form-select"><option>Tesseract OCR v5</option><option>EasyOCR</option></select></div>
+      <div class="form-group"><label class="form-label">Langues</label><select class="form-select"><option>Français + Arabe (fra+ara)</option><option>Français (fra)</option><option>Arabe (ara)</option></select></div>
+      <div class="form-group"><label class="form-label">Seuil confiance (%)</label><input type="number" class="form-input" value="60"></div>
+      <div class="form-group"><label class="form-label">Timeout (sec)</label><input type="number" class="form-input" value="10"></div>
+      <div class="form-group"><label class="form-label">Pré-traitement</label><select class="form-select"><option>Auto (orientation + contraste)</option><option>Désactivé</option></select></div>
+      <div class="form-group"><label class="form-label">URL Backend</label><input type="text" class="form-input" value="http://localhost:8000/api/ocr" style="font-family:'JetBrains Mono',monospace;font-size:12px"></div>
+    </div>
+    <div class="action-bar"><button class="btn btn-primary" onclick="showToast('Configuration sauvegardée','success')"><i class="fas fa-save"></i> Sauvegarder</button></div>
+  </div></div>
+</div>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+if(window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const API = ''; // Same origin — FastAPI serves both API and frontend
+let documents=[],fileQueue=[],currentFilter='all';
+
+// Fallback sample data (used when backend is unavailable)
+const SAMPLES=[
+{id:1,filename:"corr1.pdf",type:"pdf",lang:"fr",status:"validated",
+rawText:"Royaume du Maroc\nUniversité Cadi Ayyad – Marrakech\nLa Présidence\nPrésidence Université Cadi Ayyad – Bd. Abdelkarim El Khattabi, B.P. 511- Marrakech\nTél : 05.24.43.48.14/05.24.43.77.41 – Fax : 05.24.43.44.94 - Email : presidence@uca.ma\n\nMarrakech, le 27 JAN 2022\nN° 400/UCA/2022/586\n\nLe Président\nA\nMesdames et Messieurs les Professeurs,\nLes Personnels administratif et technique et\nLes Etudiants de l'Université\n\nOBJET : Organisation des Assises régionales Marrakech – Safi 2021-2022\n\nCher(e)s collègues des corps enseignant, administratif et technique,\nCher(e)s étudiant(e)s,\n\nDans le cadre des préparatifs des Assises nationales de l'enseignement supérieur, de la recherche scientifique et de l'innovation (ESRI) par notre Ministère de tutelle, l'Université Cadi Ayyad compte organiser au mois de mars prochain les Assises régionales de l'ESRI dont la restitution des travaux constituera le point d'entrée des assises nationales.\n\nCet important évènement, qui sera un moment fort de ce début d'année 2022, va constituer une plateforme d'échange, de partage et de mobilisation de l'intelligence collective pour repenser le système d'enseignement supérieur, de recherche scientifique et d'innovation, impulser sa qualité et renforcer son ancrage régional, en réponse aux aspirations et aux attentes exprimées par les parties prenantes au sein des universités et des différents acteurs régionaux.\n\nPour cela, l'Université Cadi Ayyad a lancé depuis mi-janvier 2022 et pendant un mois, un dispositif de mobilisation générale à travers l'organisation de rencontres d'échanges et d'écoutes, des focus groups ainsi que des consultations avec les différentes parties prenantes.\n\nAu terme de cette démarche participative, quatre tables rondes thématiques seront dégagées pour les Assises Régionales de l'ESRI qui se tiendront au mois de mars prochain.\n\nLes contributions écrites sont à transmettre à assises.regionales@uca.ma\n\nLe Président\nMoulay Lhassan HBID",
+extracted:{numero:"400/UCA/2022/586",date:"27 janvier 2022",objet:"Organisation des Assises régionales Marrakech – Safi 2021-2022",expediteur:"Le Président — Pr. Moulay Lhassan HBID, Université Cadi Ayyad",destinataire:"Mesdames et Messieurs les Professeurs, les Personnels administratif et technique et les Étudiants de l'Université",type_document:"lettre",corps:"Dans le cadre des préparatifs des Assises nationales de l'enseignement supérieur, de la recherche scientifique et de l'innovation (ESRI), l'Université Cadi Ayyad compte organiser au mois de mars prochain les Assises régionales de l'ESRI. Cet important évènement va constituer une plateforme d'échange, de partage et de mobilisation de l'intelligence collective pour repenser le système d'enseignement supérieur. L'Université a lancé un dispositif de mobilisation générale à travers des rencontres d'échanges, focus groups et consultations. Quatre tables rondes thématiques seront dégagées pour les Assises Régionales. Les contributions écrites sont à transmettre à assises.regionales@uca.ma.",confidence:{numero:88,date:95,objet:96,expediteur:92,destinataire:85,type_document:94}}},
+{id:2,filename:"bordereau_envoi_RH.pdf",type:"pdf",lang:"fr",status:"validated",
+rawText:"Royaume du Maroc\nMinistère de l'Enseignement Supérieur\nDirection des Ressources Humaines\n\nBORDEREAU D'ENVOI\n\nN° BE/2024/RH/0042\nRabat, le 03 mars 2024\n\nExpéditeur : Direction des Ressources Humaines\nDestinataire : Service du Personnel, Présidence UCA\n\nObjet : Transmission des dossiers de promotion — Session 2024\n\n1. Liste enseignants proposés (3 exemplaires)\n2. PV commissions scientifiques\n3. Copies diplômes certifiées\n4. Fiches notation 3 dernières années\n\nTotal : 47 pièces\n\nM. Karim ALAOUI\nDirecteur DRH",
+extracted:{numero:"BE/2024/RH/0042",date:"03 mars 2024",objet:"Transmission des dossiers de promotion du corps enseignant — Session 2024",expediteur:"M. Karim ALAOUI — Directeur DRH, Ministère de l'Enseignement Supérieur",destinataire:"Service du Personnel, Présidence Université Cadi Ayyad",type_document:"bordereau",corps:"Pièces transmises : 1. Liste nominative des enseignants proposés à la promotion (3 exemplaires) 2. Procès-verbaux des commissions scientifiques 3. Copies des diplômes certifiées conformes 4. Fiches de notation des 3 dernières années. Nombre total : 47 pièces.",confidence:{numero:97,date:99,objet:94,expediteur:91,destinataire:93,type_document:96}}},
+{id:3,filename:"note_inscription.pdf",type:"pdf",lang:"fr",status:"pending",
+rawText:"Royaume du Maroc\nUniversité Cadi Ayyad – Marrakech\nVice-Présidence Affaires Pédagogiques\n\nNote de service N° NS/VP-AP/2024/0189\nMarrakech, le 10 septembre 2024\n\nObjet : Calendrier des inscriptions — Année universitaire 2024-2025\n\nÀ l'attention de : Doyens et Directeurs des établissements de l'UCA\n\nLicence : du 02 au 20 septembre 2024\nMaster : du 15 au 30 septembre 2024\nDoctorat : du 01 au 15 octobre 2024\n\nPr. Fatima Zahra EL IDRISSI\nVP Affaires Pédagogiques",
+extracted:{numero:"NS/VP-AP/2024/0189",date:"10 septembre 2024",objet:"Calendrier des inscriptions — Année universitaire 2024-2025",expediteur:"Pr. Fatima Zahra EL IDRISSI — VP Affaires Pédagogiques, UCA",destinataire:"Doyens et Directeurs des établissements de l'UCA",type_document:"note",corps:"Les inscriptions pour l'année 2024-2025 : Licence du 02 au 20 septembre, Master du 15 au 30 septembre, Doctorat du 01 au 15 octobre 2024. Frais inchangés.",confidence:{numero:96,date:97,objet:93,expediteur:87,destinataire:91,type_document:90}}},
+{id:4,filename:"courrier_budget.pdf",type:"pdf",lang:"fr",status:"validated",
+rawText:"Royaume du Maroc\nMinistère de l'Économie et des Finances\nDirection du Budget\n\nRéf: DB/2024/3201\nRabat, le 05 avril 2024\n\nObjet : Notification dotation budgétaire — Exercice 2024\n\nMonsieur le Président de l'UCA,\n\nDotation 2024 : 485.000.000 MAD\n- Fonctionnement : 320.000.000 MAD\n- Investissement : 165.000.000 MAD\n\nPlan d'engagement trimestriel avant le 30 avril 2024.\n\nM. Youssef TAZI\nDirecteur du Budget",
+extracted:{numero:"DB/2024/3201",date:"05 avril 2024",objet:"Notification de la dotation budgétaire — Exercice 2024",expediteur:"M. Youssef TAZI — Directeur du Budget, Ministère de l'Économie",destinataire:"Monsieur le Président de l'Université Cadi Ayyad",type_document:"lettre",corps:"Dotation budgétaire UCA 2024 : 485.000.000 MAD. Fonctionnement 320.000.000 MAD, Investissement 165.000.000 MAD. Plan d'engagement trimestriel avant le 30 avril 2024.",confidence:{numero:98,date:99,objet:95,expediteur:92,destinataire:94,type_document:90}}},
+{id:5,filename:"lettre_cooperation.png",type:"image",lang:"fr",status:"validated",
+rawText:"Ambassade de France au Maroc\nService de Coopération\n\nRéf: SCAC/2024/007\nRabat, le 22 février 2024\n\nObjet : Coopération universitaire franco-marocaine PHC Toubkal 2024-2026\n\nMadame la VP Recherche, UCA Marrakech\n\nProgramme Partenariat Hubert Curien – Toubkal 2024-2026\nFinancements recherche : IA, transformation numérique, environnement\nDossiers avant 30 avril 2024 sur Campus France.\n\nMme Sophie MARTIN\nAttachée de Coopération",
+extracted:{numero:"SCAC/2024/007",date:"22 février 2024",objet:"Coopération universitaire franco-marocaine — PHC Toubkal 2024-2026",expediteur:"Mme Sophie MARTIN — Attachée de Coopération, Ambassade de France",destinataire:"Vice-Présidente Recherche et Coopération, UCA Marrakech",type_document:"lettre",corps:"Ouverture appel à projets PHC Toubkal 2024-2026. Financements pour recherche conjointe : intelligence artificielle, transformation numérique, sciences de l'environnement. Dossiers avant 30 avril 2024 via Campus France.",confidence:{numero:90,date:96,objet:89,expediteur:85,destinataire:82,type_document:88}}}
+];
+
+function init(){loadFromAPI()}
+
+// ─── LOAD FROM BACKEND API ───
+async function loadFromAPI(){
+  try {
+    const res = await fetch(API+'/api/courriers?per_page=100');
+    if(res.ok){
+      const data = await res.json();
+      documents = data.courriers.map(c=>({
+        id:c.id, filename:c.filename, type:c.file_type, lang:c.langue_detectee||'fr', status:c.status,
+        rawText:c.texte_complet||'',
+        extracted:{numero:c.numero||'',date:c.date||'',objet:c.objet||'',expediteur:c.expediteur||'',destinataire:c.destinataire||'',type_document:c.type_document||'lettre',etablissement:c.etablissement||'',corps:c.corps||'',confidence:c.confidence||{}}
+      }));
+    } else { documents=[...SAMPLES]; }
+  } catch(e){ console.warn('Backend non disponible, données démo chargées');documents=[...SAMPLES]; }
+  loadStats(); updateDocCount(); renderRecent(); renderTable(); setupUpload();
+}
+
+async function loadStats(){
+  try {
+    const res = await fetch(API+'/api/courriers/stats/overview');
+    if(res.ok){
+      const s = await res.json();
+      document.getElementById('statTotal').textContent = s.total_documents;
+      document.getElementById('statValidated').textContent = s.validated;
+      document.getElementById('statPending').textContent = s.pending;
+      document.getElementById('statAccuracy').textContent = s.avg_confidence ? s.avg_confidence+'%' : '—';
+      return;
+    }
+  } catch(e){}
+  updateStats();
+}
+function showPage(p){document.querySelectorAll('.page-content').forEach(x=>x.classList.add('section-hidden'));document.getElementById('page-'+p).classList.remove('section-hidden');document.querySelectorAll('.sidebar-nav a').forEach(a=>a.classList.remove('active'));document.querySelector(`.sidebar-nav a[data-page="${p}"]`).classList.add('active');document.getElementById('breadcrumbCurrent').textContent={dashboard:'Tableau de bord',import:'Import & OCR',documents:'Courriers',search:'Recherche',api:'API REST',settings:'Paramètres'}[p]||p;document.getElementById('sidebar').classList.remove('open')}
+function updateStats(){const t=documents.length,v=documents.filter(d=>d.status==='validated').length,p=documents.filter(d=>d.status==='pending').length;const a=t?Math.round(documents.reduce((s,d)=>{const c=d.extracted.confidence;return s+(c.numero+c.date+c.objet+c.expediteur+c.destinataire+c.type_document)/6},0)/t):0;an('statTotal',t);an('statValidated',v);an('statPending',p);document.getElementById('statAccuracy').textContent=a?a+'%':'—'}
+function an(id,tgt){const el=document.getElementById(id);let c=0;const s=Math.max(1,Math.floor(tgt/15));const i=setInterval(()=>{c=Math.min(c+s,tgt);el.textContent=c;if(c>=tgt)clearInterval(i)},30)}
+function updateDocCount(){document.getElementById('docCount').textContent=documents.length}
+function renderRecent(){const c=document.getElementById('recentDocsList');if(!documents.length){c.innerHTML='<div class="empty-state"><i class="fas fa-inbox"></i><h3>Aucun courrier</h3></div>';return}c.innerHTML='<div class="table-wrap"><table class="data-table"><thead><tr><th>N°</th><th>Date</th><th>Objet</th><th>Type</th><th>Statut</th></tr></thead><tbody>'+documents.slice(-5).reverse().map(d=>`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--uca-terracotta);font-weight:600">${d.extracted.numero}</td><td style="white-space:nowrap">${d.extracted.date}</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.extracted.objet}</td><td><span class="doc-type-badge ${d.extracted.type_document}">${({lettre:'Lettre',bordereau:'Bordereau',note:'Note'})[d.extracted.type_document]||d.extracted.type_document}</span></td><td><span class="file-status ${d.status==='validated'?'done':'pending'}">${d.status==='validated'?'✓ Validé':'◷ En attente'}</span></td></tr>`).join('')+'</tbody></table></div>'}
+function renderTable(){const b=document.getElementById('documentsTableBody');if(!documents.length){b.innerHTML='<tr><td colspan="7"><div class="empty-state"><i class="fas fa-folder-open"></i><h3>Aucun document</h3></div></td></tr>';return}b.innerHTML=documents.map(d=>{const c=d.extracted.confidence,a=Math.round((c.numero+c.date+c.objet+c.expediteur+c.destinataire+c.type_document)/6);return`<tr><td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--uca-terracotta);font-weight:600">${d.extracted.numero}</td><td style="white-space:nowrap">${d.extracted.date}</td><td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.extracted.objet}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.extracted.expediteur.split('—')[0].trim()}</td><td><span class="doc-type-badge ${d.extracted.type_document}">${({lettre:'Lettre',bordereau:'Bordereau',note:'Note'})[d.extracted.type_document]||d.extracted.type_document}</span></td><td><span class="file-status ${d.status==='validated'?'done':'pending'}">${d.status==='validated'?'✓ Validé':'◷ En attente'}</span></td><td><span class="confidence-badge ${a>=90?'confidence-high':a>=75?'confidence-medium':'confidence-low'}">${a}%</span></td></tr>`}).join('')}
+function setupUpload(){const z=document.getElementById('uploadZone'),i=document.getElementById('fileInput');['dragenter','dragover'].forEach(e=>z.addEventListener(e,ev=>{ev.preventDefault();z.classList.add('drag-over')}));['dragleave','drop'].forEach(e=>z.addEventListener(e,ev=>{ev.preventDefault();z.classList.remove('drag-over')}));z.addEventListener('drop',ev=>addFiles([...ev.dataTransfer.files]));i.addEventListener('change',ev=>{addFiles([...ev.target.files]);ev.target.value=''})}
+function addFiles(fs){fs.forEach(f=>{if(!f.name.match(/\.(pdf|jpg|jpeg|png)$/i)){showToast('Format non supporté: '+f.name,'error');return}fileQueue.push({file:f,name:f.name,size:f.size,type:f.name.match(/\.pdf$/i)?'pdf':'img',status:'pending'})});renderQueue()}
+function renderQueue(){const c=document.getElementById('fileQueue'),a=document.getElementById('actionBar');if(!fileQueue.length){c.innerHTML='';a.style.display='none';return}a.style.display='flex';document.getElementById('queueInfo').textContent=fileQueue.length+' fichier(s)';c.innerHTML=fileQueue.map((f,i)=>`<div class="file-item"><div class="file-icon ${f.type}">${f.type==='pdf'?'<i class="fas fa-file-pdf"></i>':'<i class="fas fa-file-image"></i>'}</div><div style="flex:1"><div class="file-name">${f.name}</div><div class="file-meta">${fmtSz(f.size)}</div></div><span class="file-status pending">◷ En attente</span><button class="file-remove" onclick="fileQueue.splice(${i},1);renderQueue()"><i class="fas fa-times"></i></button></div>`).join('')}
+function clearQueue(){fileQueue=[];renderQueue()}
+function fmtSz(b){if(b<1024)return b+' B';if(b<1048576)return(b/1024).toFixed(1)+' KB';return(b/1048576).toFixed(1)+' MB'}
+async function processFiles(){if(!fileQueue.length)return;
+  const ov=document.getElementById('processingOverlay');ov.classList.add('active');
+  const steps=document.querySelectorAll('.processing-step');
+  let stepIdx=0;
+  const advanceStep=()=>{if(stepIdx<steps.length){steps[stepIdx].classList.add('active');if(stepIdx>0){steps[stepIdx-1].classList.remove('active');steps[stepIdx-1].classList.add('done')}stepIdx++}};
+  const stepInterval=setInterval(advanceStep,1200);advanceStep();
+
+  try {
+    const file = fileQueue[0].file;
+    let result = null;
+    let backendUsed = false;
+    let errorMsg = '';
+
+    // ═══ ÉTAPE 1 : Essayer le backend Tesseract OCR (prioritaire) ═══
+    try {
+      const formData = new FormData();
+      formData.append('file', file, fileQueue[0].name);
+      formData.append('language', 'fra+ara');
+      const res = await fetch(API+'/api/ocr/process', {method:'POST', body:formData});
+      if(res.ok){
+        result = await res.json();
+        backendUsed = true;
+      } else {
+        const err = await res.json().catch(()=>({}));
+        errorMsg = err.detail || 'Erreur serveur '+res.status;
+        console.warn('Backend OCR erreur:', errorMsg);
+      }
+    } catch(e){
+      errorMsg = 'Backend OCR non disponible (serveur déconnecté)';
+      console.warn(errorMsg);
+    }
+
+    // ═══ ÉTAPE 2 : Fallback pdf.js (PDFs avec texte embarqué uniquement) ═══
+    if(!result){
+      let rawText = '';
+      let isGarbage = false;
+
+      if(file.type === 'application/pdf' || fileQueue[0].name.match(/\.pdf$/i)){
+        try {
+          rawText = await extractTextFromPDF(file);
+          // Détecter le texte garbage (scans sans texte embarqué)
+          isGarbage = detectGarbageText(rawText);
+        } catch(e){
+          rawText = '';
+          isGarbage = true;
+        }
+      } else {
+        // Images JPG/PNG : impossible sans OCR backend
+        isGarbage = true;
+      }
+
+      if(isGarbage || !rawText || rawText.length < 20){
+        // ═══ Texte garbage ou image : informer l'utilisateur ═══
+        clearInterval(stepInterval);
+        steps.forEach(s=>{s.classList.remove('active');s.classList.add('done')});
+        await slp(300);
+        ov.classList.remove('active');
+        steps.forEach(s=>{s.classList.remove('active','done')});
+        fileQueue=[];renderQueue();
+
+        const isImage = !file.type.includes('pdf') && !fileQueue[0]?.name?.match(/\.pdf$/i);
+        let msg = isImage
+          ? '⚠️ Ce fichier est une image — le backend Tesseract OCR est nécessaire pour extraire le texte.'
+          : '⚠️ Ce PDF est un scan (image) sans texte embarqué — le backend Tesseract OCR est nécessaire.';
+
+        if(errorMsg) msg += '\n\nErreur backend : ' + errorMsg;
+        msg += '\n\n🔧 Pour activer l\'OCR :\n1. Installer Tesseract OCR sur Windows\n2. Télécharger les langues fra + ara dans tessdata\n3. Configurer le chemin dans app/config.py\n4. Relancer uvicorn';
+
+        showToast('Document scanné — OCR Tesseract requis', 'error');
+
+        // Afficher le message dans le panneau résultats
+        document.getElementById('uploadPanel').style.display='none';
+        document.getElementById('resultsPanel').classList.remove('section-hidden');
+        document.getElementById('ocrTextContent').textContent = '⚠️ TEXTE NON EXTRACTIBLE\n\n' + msg;
+        document.getElementById('langDetected').innerHTML='<span class="lang-indicator" style="background:#FDEDEB;color:#C0392B">OCR requis</span>';
+        // Vider les champs
+        ['fieldNumero','fieldDate','fieldObjet','fieldExpediteur','fieldDestinataire','fieldEtablissement','fieldCorps'].forEach(id=>document.getElementById(id).value='');
+        document.getElementById('fieldType').value='lettre';
+        ['confNum','confDate','confObjet','confExp','confDest','confType','confEtab'].forEach(id=>{const e=document.getElementById(id);e.className='confidence-badge confidence-low';e.textContent='0%'});
+        return;
+      }
+
+      // Texte valide extrait par pdf.js — envoyer au backend pour NLP Python
+      try {
+        const nlpRes = await fetch(API+'/api/ocr/process-text', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            text: rawText,
+            filename: fileQueue[0].name
+          })
+        });
+        if(nlpRes.ok){
+          result = await nlpRes.json();
+        } else {
+          // Backend NLP indisponible → fallback ultime : extraction JS
+          // (cette branche ne devrait quasi jamais se déclencher)
+          console.warn('Backend NLP indisponible, fallback JS');
+          const extracted = extractFieldsFromText(rawText);
+          result = {
+            id: Date.now(),
+            ...extracted.fields,
+            texte_complet: rawText,
+            langue_detectee: detectLanguage(rawText),
+            confidence: extracted.confidence,
+            metadata: { ocr_engine:'pdf.js + JS fallback', processing_time_ms: 0 }
+          };
+        }
+      } catch(e) {
+        // Pas de réseau du tout → fallback JS
+        const extracted = extractFieldsFromText(rawText);
+        result = {
+          id: Date.now(),
+          ...extracted.fields,
+          texte_complet: rawText,
+          langue_detectee: detectLanguage(rawText),
+          confidence: extracted.confidence,
+          metadata: { ocr_engine:'pdf.js + JS fallback', processing_time_ms: 0 }
+        };
+      }
+    }
+
+    clearInterval(stepInterval);
+    steps.forEach(s=>{s.classList.remove('active');s.classList.add('done')});
+    await slp(400);
+    ov.classList.remove('active');
+    steps.forEach(s=>{s.classList.remove('active','done')});
+
+    const nd = {
+      id: result.id || Date.now(),
+      filename: fileQueue[0].name,
+      type: fileQueue[0].type,
+      lang: result.langue_detectee||'fr',
+      status: 'pending',
+      rawText: result.texte_complet||'',
+      extracted: {
+        numero: result.numero||'',
+        date: result.date||'',
+        objet: result.objet||'',
+        expediteur: result.expediteur||'',
+        destinataire: result.destinataire||'',
+        type_document: result.type_document||'lettre',
+        etablissement: result.etablissement||'',
+        corps: result.corps||'',
+        confidence: result.confidence||{}
+      }
+    };
+
+    documents.push(nd);fileQueue=[];renderQueue();
+    showResults(nd);loadStats();updateDocCount();renderRecent();renderTable();
+    const engine = backendUsed ? 'Tesseract OCR' : 'pdf.js';
+    showToast(`OCR terminé (${engine}) — champs extraits avec succès`,'success');
+  } catch(err){
+    clearInterval(stepInterval);ov.classList.remove('active');
+    steps.forEach(s=>{s.classList.remove('active','done')});
+    showToast('Erreur: '+err.message,'error');
+  }
+}
+
+// ═══ Détecter si le texte extrait par pdf.js est du garbage (scan sans texte embarqué) ═══
+function detectGarbageText(text){
+  if(!text || text.length < 30) return true;
+  // Compter les caractères "normaux" (lettres latines, arabes, chiffres, espaces, ponctuation)
+  const normal = text.match(/[a-zA-ZÀ-ÿ\u0600-\u06FF0-9\s.,;:!?()\/\-'"°]/g) || [];
+  const ratio = normal.length / text.length;
+  // Si moins de 50% du texte est constitué de caractères normaux = garbage
+  if(ratio < 0.50) return true;
+  // Vérifier la présence de vrais mots français ou arabes
+  const frWords = text.match(/\b(le|la|les|de|du|des|un|une|et|ou|en|à|pour|par|sur|dans|qui|que|est|sont|nous|vous|avec|cette|monsieur|madame|objet|courrier|université|faculté|président|directeur|doyen)\b/gi) || [];
+  const arWords = text.match(/(الى|من|في|على|إلى|جامعة|كلية|رئيس|عميد|الموضوع|السيد|بسم)/g) || [];
+  if(frWords.length < 3 && arWords.length < 2) return true;
+  return false;
+}
+
+// ═══ Détecter la langue du texte ═══
+function detectLanguage(text){
+  const ar = (text.match(/[\u0600-\u06FF]/g)||[]).length;
+  const la = (text.match(/[a-zA-ZÀ-ÿ]/g)||[]).length;
+  if(ar > la) return 'ar';
+  if(ar > 0 && ar > la*0.2) return 'fr+ar';
+  return 'fr';
+}
+
+// ═══════════════════════════════════════════════════
+// EXTRACTION TEXTE PDF côté client via pdf.js
+// ═══════════════════════════════════════════════════
+async function extractTextFromPDF(file){
+  if(!window.pdfjsLib){ return '[pdf.js non chargé]'; }
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:arrayBuffer}).promise;
+  let fullText = '';
+  for(let i=1; i<=pdf.numPages; i++){
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const pageText = content.items.map(item=>item.str).join(' ');
+    fullText += pageText + '\n\n';
+  }
+  return fullText.trim();
+}
+
+// ═══════════════════════════════════════════════════
+// EXTRACTION NLP côté client — Regex + Règles métiers
+// Mêmes patterns que le backend Python nlp_extractor.py
+// ═══════════════════════════════════════════════════
+function extractFieldsFromText(text){
+  const fields = {
+    numero: extractNumero(text),
+    date: extractDate(text),
+    objet: extractObjet(text),
+    expediteur: extractExpediteur(text),
+    destinataire: extractDestinataire(text),
+    type_document: detectType(text),
+    corps: extractCorps(text),
+  };
+  const confidence = {};
+  for(const [k,v] of Object.entries(fields)){
+    if(k==='corps') continue;
+    confidence[k] = computeConfidence(k, v, text);
+  }
+  return { fields, confidence };
+}
+
+function extractNumero(t){
+  const patterns = [
+    /[Cc]ode\s*[:.]?\s*(\d{3})\s*\/.*?[=\-\s]*(\d{4})/,
+    /[Nn][°º]\s*[:.]?\s*(\d[\d\s]*(?:\/[\dA-Z\-\.]+)+)/,
+    /[Nn][°º]\s*[:.]?\s*([\d\s]+\/\d+\/[A-Z\-]+)/,
+    /[Rr][eé]f[eé]?ren[ct]e\s*[:.]?\s*([\d\.]+\/[\d]+[A-Z\-]*)/,
+    /[Rr][eé]f[\s.:]+\s*([A-Z0-9\/\-\.]+(?:\/[A-Z0-9\-\.]+)+)/,
+    /[Nn][°º]\s*[:.]?\s*[:\s]*(\d{3,})/,
+    /رقم\s*[:.]?\s*([\d\/\-]+)/,
+    /[Nn][°º]\s*(\d{2,}(?:\/\d+)*)/,
+  ];
+  for(const p of patterns){
+    const m = t.match(p);
+    if(m){
+      if(m[2]) return m[1]+'/'+m[2];
+      let n = (m[1]||'').trim().replace(/\.$/,'').replace(/(\d)\s+(\d)/g,'$1$2');
+      if(n.length>=2) return n;
+    }
+  }
+  return '';
+}
+
+function extractDate(t){
+  const moisFR={JAN:'janvier',JANV:'janvier',FEV:'février',FEVR:'février',MAR:'mars',MARS:'mars',AVR:'avril',AVRI:'avril',AVRIL:'avril',MAI:'mai',JUN:'juin',JUIN:'juin',JUL:'juillet',JUIL:'juillet',AOU:'août',SEP:'septembre',SEPT:'septembre',OCT:'octobre',NOV:'novembre',DEC:'décembre'};
+  const moisAR={'يناير':'janvier','فبراير':'février','مارس':'mars','أبريل':'avril','ابريل':'avril','ماي':'mai','يونيو':'juin','يوليوز':'juillet','غشت':'août','شتنبر':'septembre','أكتوبر':'octobre','نونبر':'novembre','دجنبر':'décembre'};
+  const moisNoms=['','janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  const patterns = [
+    /(\d{1,2})\s+([A-Za-z\u00C0-\u024F]{3,12})\.?\s+(\d{4})/i,
+    /(\d{1,2})\s+(يناير|فبراير|مارس|أبريل|ابريل|ماي|يونيو|يوليوز|غشت|شتنبر|أكتوبر|نونبر|دجنبر)\s+(\d{4})/,
+    /(\d{1,2})\/(\d{1,2})\/(\d{4})/,
+    /(?:le|Le)\s*[:.]?\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/,
+  ];
+  for(const p of patterns){
+    const m = t.match(p);
+    if(m){
+      let [_,j,mo,a] = m;
+      // Check French month abbreviation
+      let u = mo.toUpperCase().replace(/\.$/,'');
+      if(moisFR[u]) return `${j.padStart(2,'0')} ${moisFR[u]} ${a}`;
+      // Partial match: AVR->avril, AVRI->avril
+      for(const [k,v] of Object.entries(moisFR)){ if(u.length>=3 && u.startsWith(k.substring(0,3))) return `${j.padStart(2,'0')} ${v} ${a}`; }
+      // Arabic month
+      if(moisAR[mo]) return `${j.padStart(2,'0')} ${moisAR[mo]} ${a}`;
+      // Already full month name
+      if(moisNoms.includes(mo.toLowerCase())) return `${j.padStart(2,'0')} ${mo.toLowerCase()} ${a}`;
+      // Numeric month
+      if(/^\d+$/.test(mo)){ let mi=parseInt(mo); if(mi>=1&&mi<=12) return `${j.padStart(2,'0')} ${moisNoms[mi]} ${a}`; }
+    }
+  }
+  return '';
+}
+
+function extractObjet(t){
+  const patterns = [
+    /(?:OBJET|Objet|objet)\s*[:.]?\s*(.+?)(?:\n|$)/m,
+    /(?:Concerne|CONCERNE|Concernant)\s*[:.]?\s*(.+?)(?:\n|$)/m,
+    /(?:الموضوع|الموضـوع)\s*[:.]?\s*(.+?)(?:\n|$)/m,
+  ];
+  for(const p of patterns){
+    const m = t.match(p);
+    if(m && m[1]){
+      let o = m[1].trim().replace(/^[_\-=:]+\s*/,'').replace(/\s*[_\-=]+$/,'');
+      if(o.length>3) return o;
+    }
+  }
+  // Fallback: after "Veuillez trouver ci-joint"
+  const fb = t.match(/Veuillez trouver ci-joint\s*[,:.]?\s*\n\s*(.+?)(?:\n|$)/);
+  if(fb && fb[1].trim().length>5) return fb[1].trim();
+  return '';
+}
+
+function extractExpediteur(t){
+  // 1) Institution
+  let inst='';
+  const instP=[[/Facult.+Sciences Semlalia|FSSM?/i,'FSS Semlalia'],[/Facult.+Sciences Juridiques.+Marrakech|FSJES/i,'FSJES Marrakech'],[/Facult.+Sciences et Techniques|FST/i,'FST Marrakech'],[/Facult.+Polydisciplinaire.+Safi/i,'FP Safi'],[/[EÉ]cole Sup.rieure.+Technologie.+Essaouira|ESTE?/i,'EST Essaouira'],[/Centre R.gional d.Investissement.+Marrakech|CRI.?R?M?S?/i,'CRI Marrakech-Safi'],[/Pr.sidence.+Cadi Ayyad|Universit.+Cadi Ayyad.+Pr.sidence/i,'Présidence UCA'],[/جامعة القاضي عياض|الرئاسة/,'Présidence UCA']];
+  for(const [p,n] of instP){ if(p.test(t.substring(0,800))){inst=n;break;} }
+
+  // 2) Titre
+  let titre='';
+  const titreP=[/Le Doyen par [Ii]nt.rim/,/Pour le Pr.sident\s*\n?\s*Le Vice-Pr.sident/,/Le Pr.sident/,/Le Directeur/,/Le Doyen/,/Le Vice-Pr.sident/,/Le Secr.taire G.n.ral/,/العميد بالنيابة/,/السيد رئيس الجامعة/,/العميد/];
+  for(const p of titreP){const m=t.match(p);if(m){titre=m[0].trim();break;}}
+
+  // 3) Signataire (last third of text)
+  let sig='';
+  const last=t.substring(Math.floor(t.length/2));
+  const sigP=[/([A-Z\u00C0-\u024F][a-z\u00E0-\u024F]+(?:\s+[A-Z\u00C0-\u024F]+)+)\s*$/gm,/(?:Pr\.|Mr?\.|Mme\.?|Dr\.?)\s+([A-Z\u00C0-\u024F][a-z\u00E0-\u024F]+(?:\s+[A-Za-z\u00C0-\u024F]+)+)/g,/([\u0600-\u06FF]+(?:\s+[\u0600-\u06FF]+){1,4})\s*$/gm];
+  for(const p of sigP){let m,lastM=null;while((m=p.exec(last))!==null)lastM=m;if(lastM){sig=(lastM[1]||lastM[0]).trim();break;}}
+
+  const parts=[titre,sig,inst].filter(x=>x);
+  return parts.length ? parts.join(' — ') : '';
+}
+
+function extractDestinataire(t){
+  const patterns = [
+    /(?:^|\n)\s*[AÀ]\s*\n\s*((?:Monsieur|Madame|Mesdames|Messieurs)[\s\S]*?)(?:\n\n|\n(?:OBJET|Objet|Bordereau|BORDEREAU|ورقة))/m,
+    /(?:^|\n)\s*[AÀ]\s*\n\s*(Monsieur le (?:Pr.sident|Doyen|Directeur)[^\n]*)/m,
+    /(?:إلى|الى)\s*\n?\s*(السيد[^\n]+|السيدتين[^\n]+)/,
+    /(?:Destinataire|DESTINATAIRE)\s*[:.]?\s*(.+?)(?:\n|$)/,
+    /(?:À l'attention de|A l'attention de)\s*[:.]?\s*(.+?)(?:\n|$)/,
+  ];
+  for(const p of patterns){
+    const m = t.match(p);
+    if(m && m[1]){
+      let d = m[1].trim().replace(/\n+/g,', ').replace(/,\s*,/g,',').trim().replace(/^,\s*/,'').replace(/,\s*$/,'');
+      if(d.length>3) return d;
+    }
+  }
+  return '';
+}
+
+function detectType(t){
+  const u = t.substring(0,3000);
+  if(/BORDEREAU\s+D.ENVOI|[Bb]ordereau\s+d.envoi|BORDEREAU|ورقة\s+الإرسال/i.test(u)) return 'bordereau';
+  if(/[Nn]ote\s+de\s+service|NOTE\s+DE\s+SERVICE|مذكرة/i.test(u)) return 'note';
+  if(/[Cc]irculaire|CIRCULAIRE|منشور/i.test(u)) return 'circulaire';
+  return 'lettre';
+}
+
+function extractCorps(t){
+  const lines = t.split('\n');
+  let start=0, end=lines.length;
+  for(let i=0;i<lines.length;i++){
+    if(/Cher\(e\)s|Monsieur le Pr.sident,|Madame,|وبعد|Veuillez trouver ci-joint/i.test(lines[i])){
+      start = /Veuillez/i.test(lines[i]) ? i : i+1; break;
+    }
+    if(/(?:OBJET|Objet|الموضوع)\s*:/i.test(lines[i])){start=i+1;break;}
+  }
+  for(let i=lines.length-1;i>start;i--){
+    if(/Veuillez agr.er|nous vous prions|وتقبلوا|Le Pr.sident\s*$|Le Directeur\s*$|Le Doyen\s*$|العميد|Point de contact/i.test(lines[i].trim())){end=i;break;}
+  }
+  return lines.slice(start,end).map(l=>l.trim()).filter(l=>l).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+
+function computeConfidence(field, value, text){
+  if(!value) return 0;
+  let s = 50;
+  if(value.length>10) s+=15;
+  if(value.length>30) s+=10;
+  if(field==='numero' && /^[A-Z0-9\/\-\.]+$/.test(value)) s+=25;
+  else if(field==='date' && /\d{1,2}\s+\w+\s+\d{4}/.test(value)) s+=30;
+  else if(field==='objet' && value.length>15) s+=20;
+  else if(field==='type_document'){ s += value!=='lettre' ? 30 : 15; }
+  else if(/Pr\.|M\.|Mme|Directeur|Président/.test(value)) s+=20;
+  return Math.min(s, 99);
+}
+function showResults(d){document.getElementById('uploadPanel').style.display='none';document.getElementById('resultsPanel').classList.remove('section-hidden');document.getElementById('ocrTextContent').textContent=d.rawText;document.getElementById('langDetected').innerHTML='<span class="lang-indicator lang-fr">Français</span>';const e=d.extracted;document.getElementById('fieldNumero').value=e.numero;document.getElementById('fieldDate').value=e.date;document.getElementById('fieldObjet').value=e.objet;document.getElementById('fieldExpediteur').value=e.expediteur;document.getElementById('fieldDestinataire').value=e.destinataire;document.getElementById('fieldType').value=e.type_document;document.getElementById('fieldEtablissement').value=e.etablissement||'';document.getElementById('fieldCorps').value=e.corps;sb('confNum',e.confidence.numero);sb('confDate',e.confidence.date);sb('confObjet',e.confidence.objet);sb('confExp',e.confidence.expediteur);sb('confDest',e.confidence.destinataire);sb('confType',e.confidence.type_document);sb('confEtab',e.confidence.etablissement||0);window._cd=d}
+function sb(id,v){const e=document.getElementById(id);e.className='confidence-badge '+(v>=90?'confidence-high':v>=75?'confidence-medium':'confidence-low');e.textContent=v+'%'}
+function toggleJson(){const p=document.getElementById('jsonViewPanel');p.classList.toggle('section-hidden');if(window._cd){const j={numero:window._cd.extracted.numero,date:window._cd.extracted.date,objet:window._cd.extracted.objet,expediteur:window._cd.extracted.expediteur,destinataire:window._cd.extracted.destinataire,type_document:window._cd.extracted.type_document,etablissement:window._cd.extracted.etablissement||'',texte_complet:window._cd.rawText.substring(0,400)+'...',confidence:window._cd.extracted.confidence};document.getElementById('jsonView').textContent=JSON.stringify(j,null,2)}}
+function copyJson(){navigator.clipboard.writeText(document.getElementById('jsonView').textContent).then(()=>showToast('JSON copié','info'))}
+async function validateDocument(){
+  if(!window._cd) return;
+  const updatedData = {
+    numero: document.getElementById('fieldNumero').value,
+    date_courrier: document.getElementById('fieldDate').value,
+    objet: document.getElementById('fieldObjet').value,
+    expediteur: document.getElementById('fieldExpediteur').value,
+    destinataire: document.getElementById('fieldDestinataire').value,
+    type_document: document.getElementById('fieldType').value,
+    etablissement: document.getElementById('fieldEtablissement').value,
+    corps: document.getElementById('fieldCorps').value,
+    status: 'validated',
+    validated_by: 'Agent Bureau d\'Ordre'
+  };
+
+  // Try API first
+  try {
+    const res = await fetch(API+'/api/courriers/'+window._cd.id, {
+      method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(updatedData)
+    });
+    if(res.ok) { showToast('Courrier validé et enregistré en base','success'); }
+    else { showToast('Courrier validé localement','success'); }
+  } catch(e){ showToast('Courrier validé localement','success'); }
+
+  // Update local state
+  const d=documents.find(x=>x.id===window._cd.id);
+  if(d){d.extracted.numero=updatedData.numero;d.extracted.date=updatedData.date_courrier;d.extracted.objet=updatedData.objet;d.extracted.expediteur=updatedData.expediteur;d.extracted.destinataire=updatedData.destinataire;d.extracted.type_document=updatedData.type_document;d.extracted.etablissement=updatedData.etablissement;d.extracted.corps=updatedData.corps;d.status='validated'}
+  loadStats();renderRecent();renderTable();
+}
+function resetForm(){if(window._cd)showResults(window._cd)}
+function resetImport(){document.getElementById('uploadPanel').style.display='';document.getElementById('resultsPanel').classList.add('section-hidden');document.getElementById('jsonViewPanel').classList.add('section-hidden');window._cd=null}
+function setFilter(el,f){currentFilter=f;document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');performSearch()}
+async function performSearch(){const q=document.getElementById('searchInput').value.trim(),c=document.getElementById('searchResults');
+  if(!q){c.innerHTML='<div class="empty-state"><i class="fas fa-search"></i><h3>Lancez une recherche</h3><p>Tapez un mot-clé</p></div>';return}
+
+  // Try API search first
+  let results = null;
+  try {
+    const res = await fetch(API+'/api/courriers/search?q='+encodeURIComponent(q)+'&field='+currentFilter);
+    if(res.ok){
+      const data = await res.json();
+      results = data.results.map(r=>({
+        id:r.id,rawText:r.texte_complet||'',
+        extracted:{numero:r.numero||'',date:r.date||'',objet:r.objet||'',expediteur:r.expediteur||'',destinataire:r.destinataire||'',type_document:r.type_document||'lettre',etablissement:r.etablissement||'',corps:r.corps||''}
+      }));
+    }
+  } catch(e){}
+
+  // Fallback to local search
+  const ql=q.toLowerCase();
+  if(!results){
+    results=documents.filter(d=>{const e=d.extracted;if(currentFilter==='objet')return e.objet.toLowerCase().includes(ql);if(currentFilter==='contenu')return(d.rawText+e.corps).toLowerCase().includes(ql);if(currentFilter==='expediteur')return e.expediteur.toLowerCase().includes(ql);if(currentFilter==='destinataire')return e.destinataire.toLowerCase().includes(ql);return(e.objet+e.numero+e.expediteur+e.destinataire+d.rawText+e.corps).toLowerCase().includes(ql)});
+  }
+
+  if(!results.length){c.innerHTML=`<div class="empty-state"><i class="fas fa-search-minus"></i><h3>Aucun résultat</h3><p>Rien pour « ${esc(q)} »</p></div>`;return}
+  c.innerHTML=results.map(d=>{const e=d.extracted,ft=(d.rawText||'')+' '+(e.corps||''),idx=ft.toLowerCase().indexOf(ql);let ex='';if(idx>=0){const s=Math.max(0,idx-60),en=Math.min(ft.length,idx+ql.length+60);ex=(s>0?'...':'')+esc(ft.substring(s,idx))+'<mark>'+esc(ft.substring(idx,idx+ql.length))+'</mark>'+esc(ft.substring(idx+ql.length,en))+(en<ft.length?'...':'')}return`<div class="search-result-card"><div style="display:flex;justify-content:space-between;margin-bottom:6px"><span class="search-result-ref">${e.numero}</span><span class="search-result-date">${e.date}</span></div><div class="search-result-title">${hl(e.objet||'',ql)}</div>${ex?`<div class="search-result-excerpt">${ex}</div>`:''}<div class="search-result-meta"><span><i class="fas fa-user"></i> ${(e.expediteur||'').split('—')[0].trim()}</span><span><i class="fas fa-arrow-right"></i> ${(e.destinataire||'').split(',')[0]}</span><span class="doc-type-badge ${e.type_document}">${({lettre:'Lettre',bordereau:'Bordereau',note:'Note'})[e.type_document]||e.type_document}</span></div></div>`}).join('')}
+function hl(t,q){return esc(t).replace(new RegExp('('+rx(q)+')','gi'),'<mark>$1</mark>')}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function rx(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
+function showToast(m,t='info'){const c=document.getElementById('toastContainer'),d=document.createElement('div');d.className='toast '+t;d.innerHTML=`<i class="fas ${({success:'fa-check-circle',error:'fa-exclamation-circle',info:'fa-info-circle'})[t]}"></i> ${m}`;c.appendChild(d);setTimeout(()=>{d.style.opacity='0';d.style.transform='translateX(60px)';d.style.transition='all .3s'},3000);setTimeout(()=>d.remove(),3500)}
+function slp(ms){return new Promise(r=>setTimeout(r,ms))}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>
